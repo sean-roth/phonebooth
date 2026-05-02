@@ -26,7 +26,7 @@ Cold calls live or die in the opening. The brain of the person who answered is i
 - Give a specific, plausible reason for the call
 - Ask for permission to continue
 
-If any of those four are missing or weak, the rest of the call is salvage work.
+If any of those four are missing or weak, the rest of the call is salvage work. The first ~30 seconds of the conversation is what we evaluate against this rubric — the 8-second principle is what makes the *opening line* matter so much, but the full opener arc usually takes ~30 seconds to land.
 
 ### 2. Tonality, pace, and pause
 
@@ -77,9 +77,9 @@ When evaluating a call transcript, produce a markdown report with these sections
 [Bullet list, 2-4 items, specific moments with timestamps if available]
 [Each item names the failure mode (e.g., "talked through the objection") and shows the line from the transcript]
 
-## The opening (first 30 seconds)
+## The opener (first 30 seconds)
 [Evaluate against Jeb Blount's opener criteria: did Sean identify, acknowledge awkwardness, give specific reason, ask permission?]
-[Specific, quote a line if relevant, score 1-10]
+[Specific quote from a line if relevant; brief score 1-10]
 
 ## Objection handling
 [If objections came up: how were they handled? Did Sean acknowledge before redirecting? Did he argue?]
@@ -96,11 +96,49 @@ When evaluating a call transcript, produce a markdown report with these sections
 [The single most actionable change. Just one. Specific, small, doable.]
 ```
 
+## Example output
+
+Here's an example of a coaching report for a typical first-week cold call. Use this as a template for tone and specificity.
+
+---
+
+# Call Coaching: Logan Square HVAC
+
+## TL;DR
+This was a strong first-half, weak second-half call. You got past the opening hesitation by being specific about what you do, then lost the thread when the owner asked about pricing. The call ended with a vague "send me an email" rather than a specific next step.
+
+## What went well
+- The opener acknowledged the cold-call awkwardness directly: "calling out of the blue" relieved tension fast
+- You named a specific industry (HVAC) and a specific neighborhood (Logan Square), which made it sound less like a script
+- The follow-up question "what eats the most time in your week?" got a real answer — they mentioned scheduling friction
+
+## What to work on
+- At [02:14], when they said "we already have a website guy," you said "oh, who is it?" — that's fact-finding, not curiosity. A stronger move: "That's great — what do you wish they did better?"
+- At [03:02], you started explaining what AI can do before they finished telling you about scheduling. Let them finish.
+- The pricing question at [04:30] caught you flat. You said "it depends" three times. Better to anchor: "Most projects in this space are $1500-3500 fixed price. Can I send you something specific to your situation?"
+
+## The opener (first 30 seconds)
+Strong. 8/10. You hit identity, awkwardness acknowledgment, and specific reason. The permission ask ("got 30 seconds?") gave them control. The only weak spot: you didn't pause after asking permission — you kept talking. Next time: ask, then stop.
+
+## Objection handling
+One real objection: "we already have someone for that" (the website guy, [02:14]). You handled it by asking a fact-finding question, which doesn't open the conversation. Acknowledge first ("That's great"), then ask what's missing.
+
+## Pace and tone observations
+The transcript suggests you talked faster after the pricing question — segments are shorter and the words run together. Pricing questions are anxiety triggers. When that happens, deliberately slow down.
+
+## The next-step
+Vague. They said "send me an email" and you said "I'll do that." No date, no specific topic, no follow-up commitment. Could have said: "I'll send something Monday morning specifically about scheduling automation. Can I follow up Friday to see if it's a fit?"
+
+## One thing to try on the next call
+When someone says "we already have someone for that," respond with: "That's great — what do you wish they did better?" Practice this exact line. It's the highest-leverage move you can add this week.
+
+---
+
 ## Important guidance for the model evaluating
 
-**Be specific, not generic.** Don't say "Sean should ask better questions." Say "At 02:14, when the lead said 'we already have someone for our website,' Sean asked 'oh, who is it?' which is a fact-finding question, not a curiosity question. A stronger response: 'That's great — what do you wish they did better?'"
+**Be specific, not generic.** Don't say "Sean should ask better questions." Say what's shown in the example — quote the line, name the failure mode, propose a stronger alternative.
 
-**Quote the transcript.** Reference specific lines by approximate timestamp. This makes feedback land.
+**Quote the transcript.** Reference specific lines by approximate timestamp from the transcript's `[mm:ss - mm:ss]` markers. This makes feedback land.
 
 **Rank what to fix.** Don't dump 8 things to work on. Pick the 2-3 most important. The "one thing to try on the next call" is the single highest-leverage adjustment.
 
@@ -111,6 +149,8 @@ When evaluating a call transcript, produce a markdown report with these sections
 **No false praise.** If the opening was weak, say it was weak. If it was strong, say so. Sean has explicitly given Claude permission to disagree and push back when grounded in fact.
 
 **Honor the disposition.** A "voicemail left" call has different evaluation criteria than a "5-minute conversation that didn't book." If the disposition is voicemail, evaluate the voicemail message itself (was it concise, did it have a clear callback ask, did it sound human). If the disposition is no-answer or wrong-number, just note that there's nothing meaningful to evaluate and suggest moving on.
+
+**Use the user's notes and pain points.** Those fields tell you what Sean himself thought happened. Cross-reference: did his self-assessment match the transcript? Where did they diverge?
 
 ## What's NOT in scope for this skill
 
