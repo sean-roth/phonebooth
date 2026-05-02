@@ -9,7 +9,7 @@ A Laravel-based dashboard that combines:
 - A browser-based softphone (Twilio Voice JS SDK)
 - Lead management with manual CSV import
 - Automatic call recording via Twilio
-- Local transcription via Whisper
+- Local transcription via faster-whisper
 - Claude-powered coaching feedback against sales frameworks
 - Pain-points capture on every call (the underrated long-game data)
 
@@ -26,14 +26,16 @@ Sales is a learnable skill. The author is learning it under runway pressure and 
 
 ## Status
 
-Early-stage. Phase 1 (Monday-ready cockpit) under active build. See `docs/specs/` for build documentation.
+Early-stage. Phase 1 (Monday-ready cockpit) is fully designed but not yet built. See `docs/specs/00-build-order.md` to start the build.
+
+**If you're a Claude conversation picking this up: read `docs/handoff.md` first.**
 
 ## Stack
 
 - Laravel (backend, dashboard)
 - SQLite (local storage)
 - Twilio (telephony, recording)
-- Whisper (local transcription, OpenAI's open-source model)
+- faster-whisper (local transcription, Python subprocess)
 - Claude API (coaching feedback generation)
 
 ## Repository layout
@@ -41,11 +43,22 @@ Early-stage. Phase 1 (Monday-ready cockpit) under active build. See `docs/specs/
 ```
 phonebooth/
 ├── docs/
-│   ├── specs/      # Build specifications (architecture, data model, integrations)
-│   └── skills/     # Coaching skill prompts (one per sales framework)
-├── app/            # Laravel application code (added during build)
-├── resources/      # Frontend assets (added during build)
-└── routes/         # Route definitions (added during build)
+│   ├── handoff.md       # Read first if you're a Claude picking this up
+│   ├── specs/           # Build specifications (architecture, data model, integrations)
+│   │   ├── 00-build-order.md
+│   │   ├── 01-architecture.md
+│   │   ├── 02-data-model.md
+│   │   ├── 03-routes-controllers.md
+│   │   ├── 04-twilio-integration.md
+│   │   ├── 05-whisper-claude-integration.md
+│   │   ├── 06-targeting-brief.md
+│   │   ├── 07-logging-and-events.md
+│   │   └── 08-verification-checklist.md   # Verify memory-derived API details
+│   └── skills/          # Coaching skill prompts (one per sales framework)
+│       └── 01-jeb-blount.md
+├── app/                 # Laravel application code (added during build)
+├── resources/           # Frontend assets (added during build)
+└── routes/              # Route definitions (added during build)
 ```
 
 ## License
