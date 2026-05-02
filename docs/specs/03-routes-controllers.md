@@ -25,8 +25,23 @@ POST  /webhooks/twilio/recording  → TwilioWebhookController@recording   (Twili
 POST  /webhooks/twilio/status     → TwilioWebhookController@status      (call status updates)
 
 GET   /api/twilio/token           → TwilioTokenController@generate      (returns capability token for browser SDK)
-POST  /api/twilio/voice           → TwilioTokenController@voice         (TwiML response for outbound calls)
+POST  /api/twilio/voice           → TwilioTokenController@voice         (TwiML response for outbound calls; called by Twilio, not browser)
 ```
+
+## CSRF protection
+
+Laravel's CSRF middleware is on by default. The following routes need to be **exempted** in `app/Http/Middleware/VerifyCsrfToken.php`:
+
+```php
+protected $except = [
+    'webhooks/twilio/*',
+    'api/twilio/voice',
+];
+```
+
+These are exempted because Twilio (not the browser) sends POST requests to them and Twilio doesn't include CSRF tokens.
+
+The **other** POST routes (`/leads/import`, `/calls`, `/calls/{call}/process`, etc.) are browser-driven and keep CSRF protection. Forms include `@csrf` Blade directive; AJAX requests include the token via `X-CSRF-TOKEN` header (see spec 04 for the JS pattern).
 
 ## Controllers in detail
 
@@ -44,14 +59,18 @@ Each row shows: business_name, contact_name, neighborhood, industry, status badg
 #### `import(Request $request)` → POST /leads/import
 Accepts a CSV upload. Validates and creates leads.
 
-Form: `multipart/form-data` with field `csv_file`.
+Form: `multipart/form-data` with field `csv_file`. Standard Blade form with `@csrf`.
 
 Logic:
 1. Validate file presence and `.csv` extension
-2. Parse with Laravel's `League\Csv` or just `fgetcsv`
+2. Parse with `League\Csv` or just `fgetcsv`
 3. For each row:
    - Validate `business_name` and `phone` not empty
-   - Normalize `phone` to E.164 (`+1` prefix if 10 digits)
+   - **Normalize phone:**
+     - Strip all non-digit characters
+     - If 10 digits: prepend `+1`
+     - If 11 digits and starts with `1`: prepend `+`
+     - Otherwise: reject the row as invalid
    - Skip if phone already exists in DB
    - Create lead
 4. Return to `/leads` with flash message: "Imported {n}, skipped {m} duplicates, rejected {r} invalid rows"
@@ -61,6 +80,8 @@ Returns view `leads.show` with the lead's full record and a markdown editor for 
 
 #### `update(Lead $lead, Request $request)` → PATCH /leads/{lead}
 Updates lead fields. Mass-assignable via `$lead->update($request->validated())`. Used for brief editing and status changes.
+
+**Lead status transitions in Phase 1: manual.** When a call is saved with disposition `discovery_booked`, the user can manually update the lead's status to `discovery_booked` via the lead detail page. Phase 2 can automate this transition based on call disposition. Don't build the auto-transition now — it's an opinion that needs user-tested.
 
 ### `CallController`
 
@@ -75,13 +96,13 @@ Returns view `calls.create` — the cockpit. Three vertical sections:
 
 **Middle section: Dialer**
 - Status indicator (idle / connecting / on-call / wrapping-up)
-- "Call" button (large, green, prominent)
+- "Call" button (large, green, prominent) — has `data-phone` and `data-lead-id` attributes
 - Phone number display (read-only, set from lead)
 - "Hang Up" button (visible only during call, large red)
 - Live duration timer when call is active
 - A small "device select" dropdown for browser audio device (microphone selection — defaults to system default)
 
-This section is JS-heavy. See `04-twilio-integration.md` for the Voice JS SDK wiring.
+This section is JS-heavy. See spec 04 for the Voice JS SDK wiring.
 
 **Bottom section: Post-call form**
 - Disabled until call ends
@@ -98,7 +119,10 @@ This section is JS-heavy. See `04-twilio-integration.md` for the Voice JS SDK wi
 - Notes (textarea, optional)
 - "Save and Next" button — saves the call, then loads the next lead in `new` status
 - "Save and Stay" button — saves the call, returns to this lead's detail page
-- "Save and Process" button — saves the call AND triggers /calls/{call}/process
+
+The form submits via standard Blade form POST (with `@csrf`), not fetch.
+
+Note: "Process Call" is NOT on the cockpit page. It lives on the call detail page (`/calls/{call}`). The cockpit is for placing calls; the detail page is for reviewing them.
 
 #### `store(Request $request)` → POST /calls
 Creates a call row when the user clicks "Call" in the cockpit. Returns JSON.
@@ -113,7 +137,7 @@ Body:
 Logic:
 1. Validate lead exists
 2. Create call row with `lead_id`, `started_at = now()`, all other fields null
-3. Return the new call's `id` (the JS will need it to associate the Twilio call SID later)
+3. Return the new call's `id` (the JS will pass this through to Twilio's voice endpoint)
 
 Response:
 ```json
@@ -141,79 +165,56 @@ Layout:
 - Audio player (if `recording_url` present) — embed Twilio's recording URL in `<audio>` tag, OR provide a download link
 - Transcript section:
   - If `transcript` is null and `recording_url` is null: "Recording not yet received from Twilio"
-  - If `transcript` is null and `recording_url` is present: "Process Call" button
+  - If `transcript` is null and `recording_url` is present: "Process Call" form button
   - If `transcript` is present: rendered transcript text (preserve line breaks)
 - Coaching feedback section:
   - If `coaching_feedback` is null: empty or "Not yet processed"
   - If present: rendered as markdown
 
 #### `process(Call $call)` → POST /calls/{call}/process
-Triggers the Whisper + Claude pipeline for this call. Long-running (could take 30-90 seconds). For Phase 1, a synchronous request with a loading spinner is acceptable.
+Triggers the Whisper + Claude pipeline for this call. Long-running (could take 60-90 seconds).
 
-Logic:
-1. Validate `recording_url` is present
-2. Download recording to `storage/recordings/{call_id}.mp3` if not already there
-3. Save `recording_local_path` on the call
-4. Run faster-whisper as subprocess: capture transcript
-5. Save transcript to call row
-6. Build coaching prompt: load skill content from `docs/skills/01-jeb-blount.md` (or whichever framework), interpolate with transcript + call metadata
-7. Call Claude API
-8. Save `coaching_feedback` and `coaching_framework` to call row
-9. Set `processed_at = now()`
-10. Redirect back to `/calls/{call}` with flash message
+**Important:** This endpoint should be invoked via a standard form POST (with `@csrf`), NOT a fetch/XHR request. Reasons:
+- Browsers wait indefinitely on form submissions, with the spinner being the page navigation indicator
+- Fetch/XHR has default timeouts (~60s in some browsers) that can fire before the pipeline completes
+- A redirect-after-POST cleanly delivers the user to the call detail page when done
 
-See `05-whisper-claude-integration.md` for implementation details.
+The form on the call detail page:
+```html
+<form method="POST" action="{{ route('calls.process', $call) }}">
+    @csrf
+    <button type="submit">Process Call</button>
+</form>
+```
+
+See spec 05 for the full processing logic.
 
 ### `TwilioWebhookController`
 
 #### `recording(Request $request)` → POST /webhooks/twilio/recording
-Twilio calls this when a recording is ready (after the call ends). Public endpoint, no auth — but signature verification is REQUIRED.
+Twilio calls this when a recording is ready (after the call ends). Public endpoint, no auth — but signature verification is REQUIRED via the `twilio.signature` middleware.
 
 Twilio sends form-encoded POST data including:
 - `CallSid` — the call's Twilio SID
 - `RecordingSid`, `RecordingUrl`, `RecordingDuration`, `RecordingStatus`
 
 Logic:
-1. **Verify Twilio signature** using `X-Twilio-Signature` header and the auth token. Reject if invalid (return 403).
-2. Find call row by `twilio_call_sid = CallSid`
-3. If not found, log and return 200 (don't error — Twilio will retry forever)
-4. Update call row with `recording_url`, `duration_seconds = RecordingDuration`, `ended_at = now()` if not set
-5. Return 200 with empty body
+1. Find call row by `twilio_call_sid = CallSid`
+2. If not found, log and return 200 (don't error — Twilio will retry forever on non-200)
+3. Update call row with `recording_url` (with `.mp3` appended), `duration_seconds = RecordingDuration`, `ended_at = now()` if not set
+4. Return 200 with empty body
 
 #### `status(Request $request)` → POST /webhooks/twilio/status
 Receives call status callbacks (initiated, ringing, answered, completed, failed). Used to update `started_at`, `ended_at`, and detect failures.
 
-Less critical than recording webhook for Phase 1 — Twilio will fire it but we mostly care about the recording. Implement basic version: log every status callback, update timestamps where relevant.
+Less critical than recording webhook for Phase 1 — Twilio will fire it but we mostly care about the recording. Implement basic version: log every status callback, update timestamps where relevant. If short on time Sunday, this can be a no-op endpoint that returns 200.
 
 ### `TwilioTokenController`
 
-#### `generate()` → GET /api/twilio/token
-Returns a Twilio Voice capability token for the browser SDK. Browser hits this endpoint when the cockpit page loads.
+See spec 04 for full code. Two methods:
 
-Returns JSON:
-```json
-{
-  "token": "eyJhbGc...",
-  "identity": "phonebooth-user"
-}
-```
-
-Token must include outgoing application SID. See `04-twilio-integration.md` for token construction.
-
-#### `voice(Request $request)` → POST /api/twilio/voice
-TwiML endpoint. Twilio hits this when the browser SDK initiates an outbound call.
-
-Returns TwiML XML:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Dial callerId="{TWILIO_PHONE_NUMBER}" record="record-from-answer-dual" recordingStatusCallback="https://{tunnel}/webhooks/twilio/recording">
-        <Number>{to_number}</Number>
-    </Dial>
-</Response>
-```
-
-The `to_number` comes from the `To` parameter Twilio passes. The `record="record-from-answer-dual"` flag enables automatic recording. The recording callback fires our webhook when done.
+- `generate()` — returns capability token for browser SDK
+- `voice()` — returns TwiML for outbound calls; this is where the call_id passed from the browser gets associated with Twilio's CallSid
 
 ## Views to create
 
@@ -221,7 +222,7 @@ In `resources/views/`:
 
 ```
 layouts/
-  app.blade.php          — base layout with nav
+  app.blade.php          — base layout with nav, includes csrf-token meta tag
 
 leads/
   index.blade.php        — leads list
@@ -231,7 +232,7 @@ leads/
 
 calls/
   create.blade.php       — the cockpit (most complex view)
-  show.blade.php         — call detail with transcript + coaching
+  show.blade.php         — call detail with transcript + coaching, includes Process Call form
 
 components/
   status-badge.blade.php — reusable status pill
@@ -249,7 +250,7 @@ twilio-device.js      — wraps Twilio.Device, exposes simple API to cockpit pag
 cockpit.js            — wires the cockpit page (call/hangup buttons, timer, form enable/disable)
 ```
 
-The `twilio-device.js` module is the only complex piece. See `04-twilio-integration.md`.
+The `twilio-device.js` module is the only complex piece. See spec 04 for full code.
 
 ## Form validations summary
 
@@ -279,3 +280,4 @@ The `twilio-device.js` module is the only complex piece. See `04-twilio-integrat
 - Batch operations (delete multiple, bulk-update status, etc.)
 - Export to CSV
 - User accounts, roles, permissions
+- Auto-transition of lead status based on call disposition (deferred to Phase 2)
