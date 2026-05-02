@@ -10,32 +10,41 @@ The hard part of this build. Specifies how to wire Twilio for browser-based outb
 2. Account SID and Auth Token (from console)
 3. Phone number purchased ($1.15/month, Chicago 312 or 773 area code)
 4. API Key + Secret pair created (different from Auth Token, used for token signing)
-5. TwiML App created — points to `/api/twilio/voice` on the public tunnel URL
-6. ngrok or cloudflared tunnel running, exposing localhost:8000 publicly
+5. TwiML App created — points to `/api/twilio/voice` on the public tunnel URL (must be HTTPS)
+6. ngrok or cloudflared tunnel running, exposing localhost:8000 publicly via HTTPS
 7. Composer package installed: `composer require twilio/sdk`
 
-## The flow
+**HTTPS requirement:** Twilio webhooks must use HTTPS URLs. ngrok provides both http:// and https:// — always use the https variant in TwiML App config and recording callbacks. Twilio will reject http:// callbacks.
+
+## The flow (with call row association)
+
+This is subtle and was a bug in the v1 spec. Read carefully.
 
 ```
 1. User loads cockpit page
-   → Browser requests /api/twilio/token
+   → Browser GETs /api/twilio/token
    → Laravel signs and returns capability token
    → Browser initializes Twilio.Device with the token
 
 2. User clicks "Call" button
-   → Browser calls Twilio.Device.connect({ params: { To: "+13125551234" } })
-   → Twilio receives the connect request
-   → Twilio POSTs to our /api/twilio/voice (TwiML App webhook URL)
-   → Our endpoint returns TwiML <Dial> with record="record-from-answer-dual"
+   → Browser POSTs to /calls with { lead_id }
+   → Laravel creates Call row, returns { call_id }
+   → Browser calls Twilio.Device.connect({ params: { To: "+1...", call_id: "123" } })
+   → Twilio receives the connect request, generates a CallSid
+   → Twilio POSTs to our /api/twilio/voice with { To, CallSid, call_id }
+   → Our voice endpoint:
+       - Updates Call row #123 with twilio_call_sid = CallSid
+       - Returns TwiML <Dial> with record="record-from-answer-dual"
    → Twilio dials the lead, bridges audio with the browser
 
 3. User talks, hangs up
    → Browser fires Twilio.Device.disconnect or remote hangs up
    → Twilio finalizes recording
-   → Twilio POSTs to /webhooks/twilio/recording with recording URL
-
-4. Laravel saves recording_url on the call row
+   → Twilio POSTs to /webhooks/twilio/recording with { CallSid, RecordingUrl, ... }
+   → Webhook finds Call by twilio_call_sid, saves recording_url
 ```
+
+The key insight: passing `call_id` as a custom param through `Twilio.Device.connect()` makes it available to our voice endpoint, which is the only place where we can correlate our internal call row with Twilio's CallSid.
 
 ## Code: capability token endpoint
 
@@ -46,6 +55,8 @@ The hard part of this build. Specifies how to wire Twilio for browser-based outb
 
 namespace App\Http\Controllers;
 
+use App\Models\Call;
+use Illuminate\Http\Request;
 use Twilio\Jwt\AccessToken;
 use Twilio\Jwt\Grants\VoiceGrant;
 
@@ -83,8 +94,18 @@ class TwilioTokenController extends Controller
     public function voice(Request $request)
     {
         $toNumber = $request->input('To');
+        $callId = $request->input('call_id');           // custom param from browser
+        $twilioCallSid = $request->input('CallSid');    // standard Twilio param
         $fromNumber = config('services.twilio.phone_number');
-        $tunnelUrl = config('app.tunnel_url');  // e.g., https://abc123.ngrok.io
+        $tunnelUrl = config('app.tunnel_url');
+
+        // Associate our Call row with Twilio's CallSid.
+        // This is THE moment where the two systems' identifiers get linked.
+        if ($callId && $twilioCallSid) {
+            Call::where('id', $callId)->update([
+                'twilio_call_sid' => $twilioCallSid,
+            ]);
+        }
 
         $twiml = new \Twilio\TwiML\VoiceResponse();
         $dial = $twiml->dial('', [
@@ -103,7 +124,7 @@ class TwilioTokenController extends Controller
 
 ## Code: services config
 
-`config/services.twilio` block:
+`config/services.php` Twilio block:
 
 ```php
 'twilio' => [
@@ -120,6 +141,28 @@ class TwilioTokenController extends Controller
 ```php
 'tunnel_url' => env('TUNNEL_URL', 'http://localhost:8000'),
 ```
+
+In `.env`, this should be the HTTPS ngrok URL during dev:
+```
+TUNNEL_URL=https://abc123.ngrok-free.app
+```
+
+## CSRF configuration
+
+Twilio POSTs to our voice and webhook endpoints, but Twilio doesn't send CSRF tokens. These routes need CSRF exemption.
+
+`app/Http/Middleware/VerifyCsrfToken.php`:
+
+```php
+protected $except = [
+    'webhooks/twilio/*',
+    'api/twilio/voice',
+];
+```
+
+**Don't add `calls/*` here.** The browser POSTs to `/calls` and `/calls/{id}` and includes the CSRF token via the `X-CSRF-TOKEN` header. Excluding those routes would defeat CSRF protection on the user-facing endpoints.
+
+The `/api/twilio/token` endpoint is a GET, so CSRF doesn't apply.
 
 ## Code: browser-side Twilio.Device wrapper
 
@@ -153,12 +196,20 @@ export class PhoneboothDevice {
         await this.device.register();
     }
 
-    async call(phoneNumber) {
+    /**
+     * Place an outbound call.
+     * @param {string} phoneNumber - E.164 format, e.g., "+13125551234"
+     * @param {number} callId - Our internal Call row ID, passed to TwiML voice endpoint
+     */
+    async call(phoneNumber, callId) {
         if (!this.device) throw new Error('Device not initialized');
 
         this.notify('connecting');
         this.activeCall = await this.device.connect({
-            params: { To: phoneNumber },
+            params: {
+                To: phoneNumber,
+                call_id: String(callId),  // Twilio passes this through to our voice endpoint
+            },
         });
 
         this.activeCall.on('accept', () => this.notify('on-call'));
@@ -238,7 +289,7 @@ device.onStatusChange = (status, payload) => {
 };
 
 callBtn.addEventListener('click', async () => {
-    // 1. Create call row in DB
+    // 1. Create call row in DB (CSRF token included as header)
     const response = await fetch('/calls', {
         method: 'POST',
         headers: {
@@ -247,11 +298,19 @@ callBtn.addEventListener('click', async () => {
         },
         body: JSON.stringify({ lead_id: leadId }),
     });
+
+    if (!response.ok) {
+        alert('Failed to create call record. Check console.');
+        return;
+    }
+
     const data = await response.json();
     currentCallId = data.call_id;
 
-    // 2. Initiate Twilio call
-    await device.call(phoneNumber);
+    // 2. Initiate Twilio call. The call_id is passed through Twilio
+    //    to our /api/twilio/voice endpoint, which uses it to associate
+    //    the Twilio CallSid with our Call row.
+    await device.call(phoneNumber, currentCallId);
 });
 
 hangupBtn.addEventListener('click', () => {
@@ -281,6 +340,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 ```
 
+Make sure the Blade layout includes the CSRF meta tag in `<head>`:
+```html
+<meta name="csrf-token" content="{{ csrf_token() }}">
+```
+
 ## Code: webhook signature verification
 
 `app/Http/Middleware/VerifyTwilioSignature.php`:
@@ -300,6 +364,9 @@ class VerifyTwilioSignature
         $validator = new RequestValidator(config('services.twilio.auth_token'));
 
         $signature = $request->header('X-Twilio-Signature');
+        // CRITICAL: this URL must EXACTLY match what Twilio used to call us.
+        // If TUNNEL_URL is wrong or stale, signature verification fails
+        // even on legitimate requests.
         $url = config('app.tunnel_url') . $request->getPathInfo();
         $params = $request->all();
 
@@ -312,37 +379,58 @@ class VerifyTwilioSignature
 }
 ```
 
-Apply to webhook routes via route middleware:
+Register in `app/Http/Kernel.php` route middleware:
+```php
+protected $routeMiddleware = [
+    // ...
+    'twilio.signature' => \App\Http\Middleware\VerifyTwilioSignature::class,
+];
+```
+
+Apply to webhook routes:
 ```php
 Route::post('/webhooks/twilio/recording', [TwilioWebhookController::class, 'recording'])
     ->middleware('twilio.signature');
 ```
+
+For local dev, signature verification can be temporarily disabled if the tunnel URL is changing rapidly. **Re-enable before any production exposure.**
 
 ## Code: recording webhook
 
 `app/Http/Controllers/TwilioWebhookController.php`:
 
 ```php
-public function recording(Request $request)
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Call;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+class TwilioWebhookController extends Controller
 {
-    $callSid = $request->input('CallSid');
-    $recordingUrl = $request->input('RecordingUrl');
-    $duration = $request->input('RecordingDuration');
+    public function recording(Request $request)
+    {
+        $callSid = $request->input('CallSid');
+        $recordingUrl = $request->input('RecordingUrl');
+        $duration = $request->input('RecordingDuration');
 
-    $call = Call::where('twilio_call_sid', $callSid)->first();
+        $call = Call::where('twilio_call_sid', $callSid)->first();
 
-    if (!$call) {
-        Log::warning('Recording webhook for unknown call', ['sid' => $callSid]);
+        if (!$call) {
+            Log::warning('Recording webhook for unknown call', ['sid' => $callSid]);
+            return response('', 200);
+        }
+
+        $call->update([
+            'recording_url' => $recordingUrl . '.mp3',  // append .mp3 to get audio
+            'duration_seconds' => (int) $duration,
+            'ended_at' => $call->ended_at ?? now(),
+        ]);
+
         return response('', 200);
     }
-
-    $call->update([
-        'recording_url' => $recordingUrl . '.mp3',  // append .mp3 to get audio
-        'duration_seconds' => (int) $duration,
-        'ended_at' => $call->ended_at ?? now(),
-    ]);
-
-    return response('', 200);
 }
 ```
 
@@ -350,17 +438,17 @@ public function recording(Request $request)
 
 In order:
 
-1. [ ] Sign up for Twilio (use the user's email)
+1. [ ] Sign up for Twilio
 2. [ ] Buy a Chicago number (312 or 773 area code) — $1.15/month
 3. [ ] Note Account SID and Auth Token from console
 4. [ ] Create API Key + Secret pair (Console → Account → API keys & tokens → Create API Key)
 5. [ ] Install ngrok (`brew install ngrok` or download)
-6. [ ] Run `ngrok http 8000` — note the HTTPS URL
-7. [ ] Create TwiML App in console pointing Voice URL to `{ngrok-url}/api/twilio/voice`
+6. [ ] Run `ngrok http 8000` — note the **HTTPS** URL (not http)
+7. [ ] Create TwiML App in console pointing Voice URL to `{https-ngrok-url}/api/twilio/voice`
 8. [ ] Copy TwiML App SID
-9. [ ] Populate `.env` with all six TWILIO_* vars + TUNNEL_URL
+9. [ ] Populate `.env` with all six TWILIO_* vars + TUNNEL_URL (https URL)
 10. [ ] `composer require twilio/sdk`
-11. [ ] `npm install @twilio/voice-sdk` (note: this is the modern SDK, not the legacy `twilio-client`)
+11. [ ] `npm install @twilio/voice-sdk`
 12. [ ] Build views and JS per spec 03
 13. [ ] Test: load cockpit page, check console for "Twilio Device registered"
 14. [ ] Test: place a call to your own cell, verify audio works in headset
@@ -369,13 +457,16 @@ In order:
 
 ## Common gotchas
 
-- **ngrok URL changes on free tier when restarted.** Pin it via paid plan ($8/mo) or use cloudflared free tier (more stable). Update TwiML App webhook + TUNNEL_URL when it changes.
-- **Outbound caller ID must match your verified number** in Twilio. Trial accounts can only call verified numbers — verify your cell in Twilio console for testing.
+- **Trial accounts can only call verified numbers.** Verify your own cell in Twilio console before testing. Production calling to arbitrary numbers requires upgrading the account ($20 minimum credit).
+- **ngrok URL changes on free tier when restarted.** Pin it via paid plan ($8/mo) or use cloudflared free tier (more stable). Update TwiML App webhook + TUNNEL_URL in .env when it changes.
+- **Outbound caller ID must match your verified number** in Twilio. The `callerId` in TwiML must be your Twilio-purchased number.
 - **Browser will request mic permission** the first time. Permission must be granted or `device.connect()` fails silently.
 - **Audio devices on macOS / Windows** sometimes require a page reload after plugging in headset. Twilio.Device caches the audio device list at init.
-- **CSRF token** must be included in any POST from the browser (Laravel's default). Either include it in headers (as shown) or exclude `/calls` and `/calls/*` from CSRF in `VerifyCsrfToken`.
-- **Recording URL needs `.mp3` appended** to be playable directly. Twilio returns the URL without extension; append it for `<audio src=>` tags.
+- **CSRF token handling:** `/calls` and `/calls/*` need it (browser-driven, JS sends header). `/webhooks/twilio/*` and `/api/twilio/voice` need exemption (Twilio-driven, no token).
+- **Signature verification fails when TUNNEL_URL doesn't match the actual URL Twilio called.** If you regenerate ngrok, update the env value AND the TwiML App webhook config.
+- **Recording URL needs `.mp3` appended** to be playable directly. Twilio returns the URL without extension.
 - **The recording is stereo (dual-channel)** with `record-from-answer-dual`. Left channel is your voice, right is theirs. faster-whisper handles this fine.
+- **The recording webhook can take 30-90 seconds to fire** after hangup, sometimes longer for long calls. Don't surface a "Process Call" button until the recording arrives.
 
 ## Cost expectations
 
