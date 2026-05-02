@@ -1,5 +1,16 @@
 # 04 — Twilio Integration
 
+> ⚠️ **VERIFY BEFORE BUILDING**
+>
+> The code samples in this spec were written from training-data memory of Twilio's APIs, not from current official docs (web access was unavailable during the design conversation).
+>
+> Before relying on any specific class name, parameter, or API behavior in this document, work through the Twilio sections of **spec 08 (verification-checklist.md)**. The architecture and flow are sound; specific implementation details may need adjustment.
+>
+> The three highest-stakes things to verify first:
+> 1. Voice JS SDK custom params propagate to the TwiML voice endpoint (call_id flow depends on this)
+> 2. Recording webhook receives the parent CallSid for `<Dial>`-initiated recordings
+> 3. PHP SDK class names and namespaces (`Twilio\Jwt\AccessToken`, `Twilio\TwiML\VoiceResponse`, etc.)
+
 ## Purpose of this document
 
 The hard part of this build. Specifies how to wire Twilio for browser-based outbound calling with automatic recording. Includes complete code examples that the Engineer should adapt rather than write from scratch.
@@ -31,11 +42,13 @@ For our purposes:
 
 This is consistent with Twilio's documented behavior for `<Dial>`-initiated dual-channel recordings: the recording is associated with the call leg that contains the `<Dial>` verb (the parent), and the recordingStatusCallback's `CallSid` reflects that.
 
+**This is one of the three "verify first" items in spec 08.** If the webhook actually receives the child CallSid instead, the matching logic will need to change.
+
 **If recording webhooks log "unknown call":** something is wrong with this assumption (or the parent SID wasn't saved, or the webhook fired before the voice endpoint completed). To debug:
-1. Add `Log::channel('phonebooth_webhooks')->info('Recording webhook params', $request->all())` to the webhook handler (already present in the code below)
+1. The webhook handler already logs all params via `Log::channel('phonebooth_webhooks')->info('Recording webhook received', $request->all())`
 2. Make a test call, check the log for the full param payload
 3. Compare the `CallSid` value in the webhook against the `twilio_call_sid` column in your `calls` table for the most recent call
-4. If they differ, you've found a Twilio behavior I got wrong — update the matching logic
+4. If they differ, you've found a Twilio behavior the spec got wrong — update the matching logic and commit a fix
 
 ## The flow (with call row association)
 
@@ -473,33 +486,34 @@ class TwilioWebhookController extends Controller
 
 In order:
 
-1. [ ] Sign up for Twilio
-2. [ ] Buy a Chicago number (312 or 773 area code) — $1.15/month
-3. [ ] Note Account SID and Auth Token from console
-4. [ ] Create API Key + Secret pair (Console → Account → API keys & tokens → Create API Key)
-5. [ ] Install ngrok (`brew install ngrok` or download)
-6. [ ] Run `ngrok http 8000` — note the **HTTPS** URL (not http)
-7. [ ] Create TwiML App in console pointing Voice URL to `{https-ngrok-url}/api/twilio/voice`
-8. [ ] Copy TwiML App SID
-9. [ ] Populate `.env` with all six TWILIO_* vars + TUNNEL_URL (https URL)
-10. [ ] `composer require twilio/sdk`
-11. [ ] `npm install @twilio/voice-sdk`
-12. [ ] Build views and JS per spec 03
-13. [ ] Test: load cockpit page, check console for "Twilio Device registered"
-14. [ ] Test: place a call to your own cell, verify audio works in headset
-15. [ ] Test: hang up, watch logs for recording webhook arrival — confirm CallSid in webhook matches twilio_call_sid in `calls` table
-16. [ ] Verify recording URL is saved on the call row in SQLite
+1. [ ] **Work through the Twilio sections of spec 08 (verification checklist) FIRST**
+2. [ ] Sign up for Twilio
+3. [ ] Buy a Chicago number (312 or 773 area code) — $1.15/month (verify current price)
+4. [ ] Note Account SID and Auth Token from console
+5. [ ] Create API Key + Secret pair (Console → Account → API keys & tokens → Create API Key)
+6. [ ] Install ngrok (`brew install ngrok` or download)
+7. [ ] Run `ngrok http 8000` — note the **HTTPS** URL (not http)
+8. [ ] Create TwiML App in console pointing Voice URL to `{https-ngrok-url}/api/twilio/voice`
+9. [ ] Copy TwiML App SID
+10. [ ] Populate `.env` with all six TWILIO_* vars + TUNNEL_URL (https URL)
+11. [ ] `composer require twilio/sdk`
+12. [ ] `npm install @twilio/voice-sdk`
+13. [ ] Build views and JS per spec 03
+14. [ ] Test: load cockpit page, check console for "Twilio Device registered"
+15. [ ] Test: place a call to your own cell, verify audio works in headset
+16. [ ] Test: hang up, watch logs for recording webhook arrival — confirm CallSid in webhook matches twilio_call_sid in `calls` table
+17. [ ] Verify recording URL is saved on the call row in SQLite
 
 ## Common gotchas
 
-- **Trial accounts can only call verified numbers.** Verify your own cell in Twilio console before testing. Production calling to arbitrary numbers requires upgrading the account ($20 minimum credit).
-- **ngrok URL changes on free tier when restarted.** Pin it via paid plan ($8/mo) or use cloudflared free tier (more stable). Update TwiML App webhook + TUNNEL_URL in .env when it changes.
+- **Trial accounts can only call verified numbers.** Verify your own cell in Twilio console before testing. Production calling to arbitrary numbers requires upgrading the account ($20 minimum credit — verify current).
+- **ngrok URL changes on free tier when restarted.** Pin it via paid plan ($8/mo cited in spec, verify) or use cloudflared free tier (more stable). Update TwiML App webhook + TUNNEL_URL in .env when it changes.
 - **Outbound caller ID must match your verified number** in Twilio. The `callerId` in TwiML must be your Twilio-purchased number.
 - **Browser will request mic permission** the first time. Permission must be granted or `device.connect()` fails silently.
 - **Audio devices on macOS / Windows** sometimes require a page reload after plugging in headset. Twilio.Device caches the audio device list at init.
 - **CSRF token handling:** `/calls` and `/calls/*` need it (browser-driven, JS sends header). `/webhooks/twilio/*` and `/api/twilio/voice` need exemption (Twilio-driven, no token).
 - **Signature verification fails when TUNNEL_URL doesn't match the actual URL Twilio called.** If you regenerate ngrok, update the env value AND the TwiML App webhook config.
-- **Recording URL needs `.mp3` appended** to be playable directly. Twilio returns the URL without extension.
+- **Recording URL needs `.mp3` appended** to be playable directly. Twilio returns the URL without extension. Verify this still applies in current docs.
 - **The recording is stereo (dual-channel)** with `record-from-answer-dual`. Left channel is your voice, right is theirs. faster-whisper mixes to mono by default.
 - **The recording webhook can take 30-90 seconds to fire** after hangup, sometimes longer for long calls. Don't surface a "Process Call" button until the recording arrives.
 - **Cancelled calls leave orphan rows.** If user clicks Call then hangs up before Twilio's voice endpoint runs, a Call row exists with no `twilio_call_sid`. These rows can sit forever harmlessly in Phase 1; Phase 2 can clean them up via a scheduled job.
@@ -512,3 +526,5 @@ At Phase 1 volume (10 calls/day, 5 min average, 22 work days):
 - Recording: 1,100 × $0.0025 = $2.75
 - Recording storage: ~$0.50
 - Total: ~$20/month at moderate volume; ~$5/month if you do 5 calls/day average
+
+**Pricing should be verified against current Twilio rates per spec 08.**
