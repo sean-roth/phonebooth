@@ -53,6 +53,8 @@ For Phase 1, this entire pipeline runs synchronously in the request. A 5-minute 
 
 The form POST approach is simpler and matches Laravel's default flow. Recommend that.
 
+**Idempotency:** The pipeline is designed so that clicking Process Call twice doesn't overwrite already-completed work. Each step checks if its output exists before running. This means failed runs can be retried (the failed step will run, the previous successful steps skip). If the user wants to re-generate coaching with a different framework, they must explicitly clear the existing `coaching_feedback` first. (Phase 2 will add a "Re-coach" action with a framework selector.)
+
 ## Component 1: Recording download
 
 `app/Services/RecordingDownloader.php`:
@@ -138,18 +140,25 @@ def main():
     model_size = os.environ.get("WHISPER_MODEL", "small")
     device = os.environ.get("WHISPER_DEVICE", "cpu")
     compute_type = os.environ.get("WHISPER_COMPUTE_TYPE", "int8")
+    # Default: auto-detect language. For Chicago small business calls,
+    # most will be English but some may be Spanish. Setting language="en"
+    # would force English output even on Spanish audio (producing garbage).
+    # Override with WHISPER_LANGUAGE env var if you want to lock to one language.
+    language = os.environ.get("WHISPER_LANGUAGE")  # None = auto-detect
 
     # Initialize model. First run downloads from HuggingFace (~460MB for small).
     model = WhisperModel(model_size, device=device, compute_type=compute_type)
 
     # Transcribe. The recording is dual-channel (left=user, right=lead);
-    # faster-whisper handles this by default by mixing channels.
-    segments, info = model.transcribe(
-        audio_path,
-        language="en",
-        beam_size=5,
-        vad_filter=True,  # voice activity detection — skip silence
-    )
+    # faster-whisper mixes channels to mono via ffmpeg by default.
+    transcribe_kwargs = {
+        "beam_size": 5,
+        "vad_filter": True,  # voice activity detection — skip silence
+    }
+    if language:
+        transcribe_kwargs["language"] = language
+
+    segments, info = model.transcribe(audio_path, **transcribe_kwargs)
 
     # Output: timestamped lines, one per segment
     for segment in segments:
@@ -192,12 +201,18 @@ class Transcriber
             $call->recording_local_path,
         ]);
 
-        $process->setEnv([
+        $env = [
             'WHISPER_MODEL' => config('services.whisper.model', 'small'),
             'WHISPER_DEVICE' => config('services.whisper.device', 'cpu'),
             'WHISPER_COMPUTE_TYPE' => config('services.whisper.compute_type', 'int8'),
-        ]);
+        ];
+        // Only set WHISPER_LANGUAGE if explicitly configured; otherwise auto-detect
+        $language = config('services.whisper.language');
+        if ($language) {
+            $env['WHISPER_LANGUAGE'] = $language;
+        }
 
+        $process->setEnv($env);
         $process->setTimeout(300);  // 5 minutes max for transcription
         $process->run();
 
@@ -226,6 +241,7 @@ class Transcriber
     'model' => env('WHISPER_MODEL', 'small'),
     'device' => env('WHISPER_DEVICE', 'cpu'),
     'compute_type' => env('WHISPER_COMPUTE_TYPE', 'int8'),
+    'language' => env('WHISPER_LANGUAGE'),  // null = auto-detect
 ],
 
 'anthropic' => [
@@ -338,7 +354,7 @@ class CoachingGenerator
 
 ---
 
-Now evaluate this call against the framework above. Follow the framework's rubric and output structure exactly.
+Now evaluate this call against the framework above. Follow the framework's rubric and output structure exactly. Output the markdown report directly with no preamble, introduction, or sign-off — start with the first heading.
 PROMPT;
     }
 }
@@ -352,6 +368,10 @@ PROMPT;
 public function process(Call $call, RecordingDownloader $downloader, Transcriber $transcriber, CoachingGenerator $coach)
 {
     try {
+        // Idempotent: each step skipped if its output already exists.
+        // This means clicking Process Call after a partial failure
+        // resumes from where it stopped, instead of redoing successful work.
+
         if (!$call->recording_local_path) {
             $downloader->download($call);
             $call->refresh();
@@ -362,10 +382,15 @@ public function process(Call $call, RecordingDownloader $downloader, Transcriber
             $call->refresh();
         }
 
-        $framework = config('services.coaching.default_framework', 'jeb_blount');
-        $coach->generate($call, $framework);
+        if (!$call->coaching_feedback) {
+            $framework = config('services.coaching.default_framework', 'jeb_blount');
+            $coach->generate($call, $framework);
+            $call->refresh();
+        }
 
-        $call->update(['processed_at' => now()]);
+        if (!$call->processed_at) {
+            $call->update(['processed_at' => now()]);
+        }
 
         return redirect()->route('calls.show', $call)
             ->with('success', 'Call processed successfully.');
@@ -377,6 +402,8 @@ public function process(Call $call, RecordingDownloader $downloader, Transcriber
     }
 }
 ```
+
+To re-generate coaching (e.g., with a different framework), the user must first clear `coaching_feedback` (manually via tinker for Phase 1; Phase 2 adds a Re-coach button). This intentional friction prevents accidental overwrites of completed work.
 
 `config/services.php`:
 ```php
@@ -439,7 +466,7 @@ Memory: faster-whisper uses ~1.5GB peak with int8 quantization on `small`. 32GB 
 ## Failure modes and recovery
 
 - **Recording not yet uploaded to Twilio:** the recording webhook may take 30-60 seconds after hangup, sometimes longer. If user clicks "Process" too early, `recording_url` is null. UI should hide the Process button until the recording webhook fires (refresh the page or display a "Recording pending..." state).
-- **Network hiccup during download:** retry once. If still failing, leave recording_local_path null and show error.
+- **Network hiccup during download:** retry once. If still failing, leave recording_local_path null and show error. User can click Process Call again — the orchestrator's idempotency means the previous successful steps don't redo.
 - **Whisper subprocess crashes:** rare but possible (out-of-memory on huge files). Show error, leave transcript null. User can retry.
 - **Claude API rate limit:** unlikely at this volume but possible. The `Http::retry(2, 1000)` in the code handles 429s with exponential backoff.
 - **Empty transcript:** if the recording is silent or Whisper produces nothing, treat as a failure. Don't send empty transcript to Claude.
@@ -455,8 +482,9 @@ Claude API per call:
 
 ## Out of scope for Phase 1
 
-- Speaker diarization (separating "you" from "them" in transcript) — faster-whisper outputs flat text. Phase 2 could use pyannote or Twilio's stereo channels to split.
+- Speaker diarization (separating "you" from "them" in transcript) — faster-whisper outputs flat text. Phase 2 could use pyannote or process Twilio's stereo channels separately to split.
 - Real-time / streaming transcription — Phase 1 is post-call only
 - Queue-based async processing — synchronous is fine for one user processing calls in sequence
-- Cost tracking per call — Phase 2 settings tab feature
+- Cost tracking per call — covered by spec 07 events; UI in Phase 2 settings tab
 - Multiple frameworks per call (parallel comparison) — Phase 2
+- Re-coaching with a different framework via UI — Phase 2 (Phase 1 requires manual `coaching_feedback` clear)
