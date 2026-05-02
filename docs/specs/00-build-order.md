@@ -2,7 +2,7 @@
 
 ## Read this first if you're the Engineer
 
-This document is the entry point. Read it, then read the specs in numerical order. Before writing any code, scan all eight specs end-to-end so the architecture makes sense as a whole.
+This document is the entry point. Read it, then read the specs in numerical order. Before writing any code, scan all nine specs (00-08) end-to-end so the architecture makes sense as a whole.
 
 **Critical: spec 08 lists every API detail in specs 04 and 05 that needs verification against current docs.** The Designer Claude wrote those specs from memory. Work through spec 08's relevant sections before relying on the code samples in 04 and 05.
 
