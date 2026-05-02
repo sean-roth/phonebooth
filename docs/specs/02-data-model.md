@@ -2,13 +2,15 @@
 
 ## Purpose of this document
 
-Defines the SQLite schema for Phase 1. Two tables: `leads` and `calls`. Designed to be extended in Phase 2 without migration pain (Phase 2 will add Twenty integration, more frameworks, audit log, etc., but won't need to restructure these core tables).
+Defines the SQLite schema for Phase 1. Three tables: `leads`, `calls`, and `events`. Designed to be extended in Phase 2 without migration pain (Phase 2 will add Twenty integration, more frameworks, hash-chained audit log, etc., but won't need to restructure these core tables).
+
+The `events` table is documented in detail in spec 07 (logging-and-events), not here. This document covers `leads` and `calls`. Both are part of the day-one schema.
 
 ## Engineering notes
 
 - SQLite via Laravel's default `database/database.sqlite`
 - Migrations live in `database/migrations/`
-- Use Laravel's standard `id`, `created_at`, `updated_at` conventions on every table
+- Use Laravel's standard `id`, `created_at`, `updated_at` conventions on every table (except `events`, which is append-only — see spec 07)
 - Soft deletes are NOT used in Phase 1 (keep it simple)
 - Foreign keys enforced (SQLite supports this with `PRAGMA foreign_keys=ON`)
 
@@ -53,11 +55,11 @@ A call is one attempt to reach a lead. One row per dialing attempt, regardless o
 |---|---|---|
 | `id` | INTEGER | Primary key. |
 | `lead_id` | INTEGER | Required. FK to `leads.id`. ON DELETE RESTRICT (don't let leads with calls be deleted). |
-| `twilio_call_sid` | TEXT | Required after Twilio confirms the call. Twilio's unique ID for the call. |
+| `twilio_call_sid` | TEXT | Required after Twilio confirms the call. Twilio's unique ID for the call. Set by the voice TwiML endpoint. |
 | `started_at` | TIMESTAMP | When the call connected (or attempt began). |
 | `ended_at` | TIMESTAMP | Nullable. When the call ended. |
 | `duration_seconds` | INTEGER | Nullable. Twilio reports this in the recording webhook. |
-| `recording_url` | TEXT | Nullable. Twilio's recording URL. Saved when recording webhook fires. |
+| `recording_url` | TEXT | Nullable. Twilio's recording URL with `.mp3` appended. Saved when recording webhook fires. |
 | `recording_local_path` | TEXT | Nullable. Path on disk if we've downloaded it for Whisper. |
 | `transcript` | TEXT | Nullable. Plain text. Whisper output. |
 | `coaching_feedback` | TEXT | Nullable. Markdown. Claude API output. |
@@ -78,12 +80,21 @@ A call is one attempt to reach a lead. One row per dialing attempt, regardless o
 - `lead_id` NOT NULL.
 - `twilio_call_sid` unique, can be NULL briefly during call creation but must be set before the call ends.
 
+## Table: `events`
+
+The events table captures structured, timestamped, queryable records of every meaningful state transition in the system. It is the substrate for traceback debugging, cost tracking, and (Phase 2) the cryptographic audit log.
+
+**Full schema and event types catalog: see spec 07 (logging-and-events.md).**
+
+The events table is part of the day-one Phase 1 build. Do not skip it — it pays for itself the first time something breaks in production.
+
 ## Lifecycle of a call row
 
-1. **Row created** when user clicks "Call" — `lead_id` set, `started_at` set to now, `twilio_call_sid` set as soon as Twilio returns it. Everything else NULL.
-2. **Recording arrives** via webhook — `recording_url`, `duration_seconds`, `ended_at` populated.
-3. **User completes form** post-call — `disposition`, `pain_points`, `notes` populated.
-4. **User clicks "Process Call"** — `recording_local_path`, `transcript`, `coaching_feedback`, `coaching_framework`, `processed_at` populated.
+1. **Row created** when user clicks "Call" — `lead_id` set, `started_at` set to now, `twilio_call_sid` NULL initially. Event recorded: `call_initiated`.
+2. **CallSid assigned** when Twilio's voice TwiML endpoint runs — `twilio_call_sid` set. Event recorded: `twilio_call_connected`.
+3. **Recording arrives** via webhook — `recording_url`, `duration_seconds`, `ended_at` populated. Event recorded: `twilio_recording_received`.
+4. **User completes form** post-call — `disposition`, `pain_points`, `notes` populated.
+5. **User clicks "Process Call"** — `recording_local_path`, `transcript`, `coaching_feedback`, `coaching_framework`, `processed_at` populated. Multiple events recorded along the way (see spec 07).
 
 A call row in any of these states is valid. The UI handles displaying partial data gracefully ("Recording not yet received" / "Not yet processed").
 
@@ -98,17 +109,18 @@ business_name,contact_name,phone,website,address,neighborhood,industry,source,no
 
 - Header row is required.
 - `business_name` and `phone` are mandatory. Bad rows are rejected with an error message; the rest of the file imports successfully.
-- `phone` must be a US number. The importer normalizes to E.164 by adding `+1` if missing.
+- `phone` is normalized: strip non-digits, prepend `+1` if 10 digits, prepend `+` if 11 digits starting with `1`, otherwise reject. (See spec 03 for full rules.)
 - Duplicate phone numbers are skipped (with a count of skipped rows shown to the user).
 - `source` defaults to `csv_import` if blank.
 - `status` is set to `new` for all imported leads (cannot be specified in CSV).
 
 ## Migrations to write
 
-Two migration files are needed:
+Three migration files are needed:
 
 1. `create_leads_table` — all columns above.
 2. `create_calls_table` — all columns above, with FK to leads.
+3. `create_events_table` — see spec 07 for schema.
 
 The Engineer should run `php artisan migrate` on a fresh SQLite database after creating these. Provide a `php artisan db:seed` command with a few test leads for development.
 
@@ -128,12 +140,15 @@ The Engineer should run `php artisan migrate` on a fresh SQLite database after c
   - `isProcessed()`: returns true if `processed_at` is not null
   - `framework()`: returns `coaching_framework` or fallback to default
 
+### `App\Models\Event`
+See spec 07.
+
 ## What's deferred to Phase 2
 
 - A `companies` and `contacts` split (Twenty's data model when migrated)
 - A `frameworks` table or seed data — for Phase 1, framework is just a string column
-- An `events` audit log table
-- A `costs` table for tracking Twilio + Claude API spend per call
+- Hash-chain columns on `events` (`prev_hash`, `content_hash`) — adding these later doesn't require migrating the existing rows; they just won't have hashes
+- A `costs` denormalized table for tracking Twilio + Claude API spend per call (the events table already has this data; a denormalized table is just for query speed)
 - Tags, custom fields, anything resembling Twenty's metadata model
 
-These are intentionally not built. The current schema is forward-compatible: when Twenty arrives, `leads` becomes a sync target, not a replacement; coaching data stays here.
+These are intentionally not built. The current schema is forward-compatible: when Twenty arrives, `leads` becomes a sync target, not a replacement; coaching data stays here; events stay here.
