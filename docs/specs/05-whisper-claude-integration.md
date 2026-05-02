@@ -1,5 +1,16 @@
 # 05 — Whisper + Claude Integration
 
+> ⚠️ **VERIFY BEFORE BUILDING**
+>
+> The code samples in this spec were written from training-data memory of the Anthropic Messages API and the faster-whisper Python package, not from current official docs (web access was unavailable during the design conversation).
+>
+> Before relying on any specific class name, parameter, model identifier, pricing number, or API behavior in this document, work through the Anthropic and faster-whisper sections of **spec 08 (verification-checklist.md)**. The architecture and flow are sound; specific implementation details may need adjustment.
+>
+> The three highest-stakes things to verify first:
+> 1. Anthropic Messages API response shape — `$data['content'][0]['text']` parsing in `CoachingGenerator`
+> 2. Current Sonnet model identifier — spec uses `claude-sonnet-4-6`
+> 3. faster-whisper `WhisperModel.transcribe()` return shape — segments iterator with `.start`, `.end`, `.text`
+
 ## Purpose of this document
 
 The post-call processing pipeline. Triggered when the user clicks "Process Call" on the call detail page. Downloads audio, transcribes locally with faster-whisper, sends transcript to Claude API for coaching feedback, saves both to the call row.
@@ -12,7 +23,7 @@ The post-call processing pipeline. Triggered when the user clicks "Process Call"
 4. The `small` model will auto-download on first use (~460MB) to `~/.cache/huggingface/`
 5. Anthropic API key in `.env` as `ANTHROPIC_API_KEY`
 
-Note on the Claude API: there is no official Anthropic PHP SDK at time of writing. The integration uses Laravel's built-in HTTP client (`Illuminate\Support\Facades\Http`) to call the Messages API directly. No additional Composer package is needed for the Claude integration.
+Note on the Claude API: there is no official Anthropic PHP SDK at time of writing. The integration uses Laravel's built-in HTTP client (`Illuminate\Support\Facades\Http`) to call the Messages API directly. No additional Composer package is needed for the Claude integration. **Verify whether an official PHP SDK has been released since — spec 08 has the docs URL.**
 
 ## Pipeline overview
 
@@ -479,6 +490,8 @@ Claude API per call:
 - Output: ~800 tokens
 - At Sonnet pricing (~$3/M input, ~$15/M output): ~$0.02 per call
 - At 22 work days × 10 calls/day = 220 calls/month × $0.02 = ~$4-5/month
+
+**Pricing should be verified against current Anthropic rates per spec 08.** If pricing has changed, update both this section and the cost calculation in `EventLogger::recordCoaching()` (spec 07).
 
 ## Out of scope for Phase 1
 
