@@ -11,7 +11,8 @@ The post-call processing pipeline. Triggered when the user clicks "Process Call"
 3. faster-whisper Python package: `pip install faster-whisper`
 4. The `small` model will auto-download on first use (~460MB) to `~/.cache/huggingface/`
 5. Anthropic API key in `.env` as `ANTHROPIC_API_KEY`
-6. Composer package: `composer require anthropic-php/anthropic-php` (or use HTTP client directly)
+
+Note on the Claude API: there is no official Anthropic PHP SDK at time of writing. The integration uses Laravel's built-in HTTP client (`Illuminate\Support\Facades\Http`) to call the Messages API directly. No additional Composer package is needed for the Claude integration.
 
 ## Pipeline overview
 
@@ -45,6 +46,13 @@ Redirect user to call detail page
 
 For Phase 1, this entire pipeline runs synchronously in the request. A 5-minute call processes in ~60-90 seconds total. Show a loading spinner. Phase 2 should move this to a queued job.
 
+**Browser timeout warning:** Some browsers and proxies time out fetch/XHR requests at 60 seconds. The Process Call action can exceed this. Two options for Phase 1:
+
+- Use a regular form POST (not fetch) — browsers wait indefinitely on form submissions, with a visible loading indicator
+- Or set up the action as a redirect-after-POST pattern with a status-polling page
+
+The form POST approach is simpler and matches Laravel's default flow. Recommend that.
+
 ## Component 1: Recording download
 
 `app/Services/RecordingDownloader.php`:
@@ -56,7 +64,6 @@ namespace App\Services;
 
 use App\Models\Call;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 
 class RecordingDownloader
 {
@@ -111,41 +118,48 @@ import sys
 import os
 from faster_whisper import WhisperModel
 
-if len(sys.argv) < 2:
-    print("Usage: transcribe.py <audio_file_path>", file=sys.stderr)
-    sys.exit(1)
-
-audio_path = sys.argv[1]
-if not os.path.exists(audio_path):
-    print(f"File not found: {audio_path}", file=sys.stderr)
-    sys.exit(1)
-
-model_size = os.environ.get("WHISPER_MODEL", "small")
-device = os.environ.get("WHISPER_DEVICE", "cpu")
-compute_type = os.environ.get("WHISPER_COMPUTE_TYPE", "int8")
-
-# Initialize model. First run downloads from HuggingFace (~460MB for small).
-model = WhisperModel(model_size, device=device, compute_type=compute_type)
-
-# Transcribe. The recording is dual-channel (left=user, right=lead);
-# faster-whisper handles this by default by mixing channels.
-segments, info = model.transcribe(
-    audio_path,
-    language="en",
-    beam_size=5,
-    vad_filter=True,  # voice activity detection — skip silence
-)
-
-# Output: timestamped lines, one per segment
-for segment in segments:
-    start = format_timestamp(segment.start)
-    end = format_timestamp(segment.end)
-    print(f"[{start} - {end}] {segment.text.strip()}")
 
 def format_timestamp(seconds):
     mins = int(seconds // 60)
     secs = int(seconds % 60)
     return f"{mins:02d}:{secs:02d}"
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: transcribe.py <audio_file_path>", file=sys.stderr)
+        sys.exit(1)
+
+    audio_path = sys.argv[1]
+    if not os.path.exists(audio_path):
+        print(f"File not found: {audio_path}", file=sys.stderr)
+        sys.exit(1)
+
+    model_size = os.environ.get("WHISPER_MODEL", "small")
+    device = os.environ.get("WHISPER_DEVICE", "cpu")
+    compute_type = os.environ.get("WHISPER_COMPUTE_TYPE", "int8")
+
+    # Initialize model. First run downloads from HuggingFace (~460MB for small).
+    model = WhisperModel(model_size, device=device, compute_type=compute_type)
+
+    # Transcribe. The recording is dual-channel (left=user, right=lead);
+    # faster-whisper handles this by default by mixing channels.
+    segments, info = model.transcribe(
+        audio_path,
+        language="en",
+        beam_size=5,
+        vad_filter=True,  # voice activity detection — skip silence
+    )
+
+    # Output: timestamped lines, one per segment
+    for segment in segments:
+        start = format_timestamp(segment.start)
+        end = format_timestamp(segment.end)
+        print(f"[{start} - {end}] {segment.text.strip()}")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 Make it executable: `chmod +x scripts/transcribe.py`
@@ -216,7 +230,7 @@ class Transcriber
 
 'anthropic' => [
     'api_key' => env('ANTHROPIC_API_KEY'),
-    'model' => env('CLAUDE_MODEL', 'claude-sonnet-4-7'),
+    'model' => env('CLAUDE_MODEL', 'claude-sonnet-4-6'),
 ],
 ```
 
@@ -250,6 +264,7 @@ class CoachingGenerator
             'content-type' => 'application/json',
         ])
         ->timeout(120)
+        ->retry(2, 1000)
         ->post('https://api.anthropic.com/v1/messages', [
             'model' => config('services.anthropic.model'),
             'max_tokens' => 4096,
@@ -356,7 +371,7 @@ public function process(Call $call, RecordingDownloader $downloader, Transcriber
             ->with('success', 'Call processed successfully.');
 
     } catch (\Exception $e) {
-        Log::error('Process call failed', ['call_id' => $call->id, 'error' => $e->getMessage()]);
+        \Log::error('Process call failed', ['call_id' => $call->id, 'error' => $e->getMessage()]);
         return redirect()->route('calls.show', $call)
             ->with('error', 'Processing failed: ' . $e->getMessage());
     }
@@ -373,7 +388,7 @@ public function process(Call $call, RecordingDownloader $downloader, Transcriber
 ## What the user sees
 
 When user clicks "Process Call":
-1. Page submits POST to `/calls/{id}/process`
+1. Page submits POST to `/calls/{id}/process` (use a form POST, not fetch — browsers wait without timeout)
 2. Server takes 60-90 seconds (download ~5s, transcribe ~30s, claude ~10-30s)
 3. Browser shows loading state (spinner + "Transcribing... this takes about a minute" message)
 4. Server redirects to `/calls/{id}` with success or error flash
@@ -381,7 +396,10 @@ When user clicks "Process Call":
 
 For Phase 1's synchronous approach, the spinner should be honest:
 ```html
-<button type="submit" id="process-btn">Process Call</button>
+<form method="POST" action="/calls/{{ $call->id }}/process" id="process-form">
+    @csrf
+    <button type="submit" id="process-btn">Process Call</button>
+</form>
 <div id="processing-msg" style="display:none">
     <span class="spinner"></span>
     Processing... Whisper is transcribing locally, then Claude reads it.
@@ -389,7 +407,8 @@ For Phase 1's synchronous approach, the spinner should be honest:
 </div>
 
 <script>
-document.getElementById('process-btn').addEventListener('click', () => {
+document.getElementById('process-form').addEventListener('submit', () => {
+    document.getElementById('process-btn').disabled = true;
     document.getElementById('processing-msg').style.display = 'block';
 });
 </script>
@@ -407,22 +426,22 @@ Run that once after install. Subsequent transcriptions are fast.
 
 ## Performance expectations
 
-Tested benchmarks for OptiPlex 9020 MT class hardware (4-core CPU, no GPU):
+Rough benchmarks for OptiPlex 9020 MT class hardware (4-core Haswell CPU, no GPU, 32GB RAM). Real numbers may vary ±50% based on exact CPU and audio characteristics:
 
 | Audio length | faster-whisper small | Total pipeline |
 |---|---|---|
-| 1 minute | ~10 seconds | ~25 seconds |
-| 5 minutes | ~45 seconds | ~75 seconds |
-| 15 minutes | ~2 minutes | ~3 minutes |
+| 1 minute | ~10-15 seconds | ~25-30 seconds |
+| 5 minutes | ~45-60 seconds | ~75-90 seconds |
+| 15 minutes | ~2-3 minutes | ~3-4 minutes |
 
 Memory: faster-whisper uses ~1.5GB peak with int8 quantization on `small`. 32GB OptiPlex has zero issue running this alongside Laravel.
 
 ## Failure modes and recovery
 
-- **Recording not yet uploaded to Twilio:** the recording webhook may take 30-60 seconds after hangup. If user clicks "Process" too early, `recording_url` is null. UI should hide the Process button until the recording webhook fires (poll the call row from JS, or just refresh).
+- **Recording not yet uploaded to Twilio:** the recording webhook may take 30-60 seconds after hangup, sometimes longer. If user clicks "Process" too early, `recording_url` is null. UI should hide the Process button until the recording webhook fires (refresh the page or display a "Recording pending..." state).
 - **Network hiccup during download:** retry once. If still failing, leave recording_local_path null and show error.
 - **Whisper subprocess crashes:** rare but possible (out-of-memory on huge files). Show error, leave transcript null. User can retry.
-- **Claude API rate limit:** unlikely at this volume but possible. The HTTP client retries automatically on 429 with exponential backoff (configure via `Http::retry(3, 1000)`).
+- **Claude API rate limit:** unlikely at this volume but possible. The `Http::retry(2, 1000)` in the code handles 429s with exponential backoff.
 - **Empty transcript:** if the recording is silent or Whisper produces nothing, treat as a failure. Don't send empty transcript to Claude.
 
 ## Cost expectations
