@@ -2,7 +2,9 @@
 
 ## Read this first if you're the Engineer
 
-This document is the entry point. Read it, then read the specs in numerical order. Before writing any code, scan all seven specs end-to-end so the architecture makes sense as a whole.
+This document is the entry point. Read it, then read the specs in numerical order. Before writing any code, scan all eight specs end-to-end so the architecture makes sense as a whole.
+
+**Critical: spec 08 lists every API detail in specs 04 and 05 that needs verification against current docs.** The Designer Claude wrote those specs from memory. Work through spec 08's relevant sections before relying on the code samples in 04 and 05.
 
 ## The mission
 
@@ -16,10 +18,11 @@ Get Sean to "first call placed through phonebooth" by Sunday night. Monday morni
 | 01 | architecture.md | System overview, scope, data flow |
 | 02 | data-model.md | SQLite schema for `leads` and `calls` |
 | 03 | routes-controllers.md | Every HTTP route, every form, every controller method |
-| 04 | twilio-integration.md | Browser softphone with code examples |
-| 05 | whisper-claude-integration.md | Post-call processing pipeline with code examples |
+| 04 | twilio-integration.md | Browser softphone with code examples (verify against spec 08) |
+| 05 | whisper-claude-integration.md | Post-call processing pipeline with code examples (verify against spec 08) |
 | 06 | targeting-brief.md | Reference only — what Phase 1 is about (not for Engineer) |
 | 07 | logging-and-events.md | Application logs + events table for traceback debugging |
+| 08 | verification-checklist.md | API details to verify against current docs before relying on 04/05 |
 
 The skill in `docs/skills/01-jeb-blount.md` is loaded at runtime by the coaching pipeline.
 
@@ -61,9 +64,11 @@ Don't add event logging here yet — leads are pre-call, not part of the critica
 
 Validate: import a CSV, see leads in the list, click into one, edit the brief, save.
 
-### Step 4: Twilio infrastructure (2 hours)
+### Step 4: Twilio infrastructure (2-4 hours, depending on verification time)
 
-Set up Twilio account and ngrok per spec 04. Configure `.env`. Implement TwilioTokenController (with the call_id handling per spec 04). Build the cockpit page (calls.create) with the dialer JS.
+**Before writing code: work through the Twilio sections of spec 08.** Verify the SDK class names, the Voice JS SDK package, the recording webhook parameters, and especially the parent vs. child CallSid behavior. Update spec 04 if you find inconsistencies.
+
+Then: set up Twilio account and ngrok per spec 04. Configure `.env`. Implement TwilioTokenController (with the call_id handling per spec 04). Build the cockpit page (calls.create) with the dialer JS.
 
 Add EventLogger calls per spec 07:
 - `call_initiated` in `CallController::store()`
@@ -73,15 +78,19 @@ Add `Log::channel('phonebooth_calls')` info logs around the same operations.
 
 Validate: load cockpit, click Call, talk to your own cell, hear yourself in headset, hang up. Then in tinker: `Event::orderBy('created_at', 'desc')->take(5)->get()` — should see `call_initiated` and `twilio_call_connected` rows. Watch logs for "Twilio Device registered" and the recording webhook firing.
 
+**Critical validation:** confirm the CallSid in the recording webhook matches the `twilio_call_sid` column for the most recent call. If it doesn't, the parent vs. child CallSid assumption is wrong — read spec 08's webhook section and update the matching logic.
+
 ### Step 5: Call data flow (1-2 hours)
 
 Implement CallController store/update. Build the post-call form on the cockpit page. Implement the recording webhook with signature verification.
 
-Add `twilio_recording_received` event in the webhook handler. Add `phonebooth_webhooks` log entry for every webhook arrival.
+Add `twilio_recording_received` event in the webhook handler. Add `phonebooth_webhooks` log entry for every webhook arrival (already in the webhook code per spec 04).
 
 Validate: place a call, hang up, fill out the form (disposition + pain points + notes), click Save, see the call row in SQLite with `recording_url` populated. Query events for that call — should see initiated, connected, recording_received in order.
 
-### Step 6: Whisper pipeline (2 hours)
+### Step 6: Whisper pipeline (2-3 hours)
+
+**Before writing code: work through the faster-whisper section of spec 08.** Verify the package name, class signature, and segments iterator behavior. Update spec 05 if anything differs.
 
 Install faster-whisper:
 ```bash
@@ -96,9 +105,13 @@ Add EventLogger calls:
 - `transcript_generated` in Transcriber on success (capture timing — wrap with `microtime(true)` before/after)
 - `error` events in any catch blocks
 
-Validate: place a test call, click Process Call (form POST per spec 03/05), see transcript appear within ~60 seconds for a 5-min call. Query events: should see download + transcript events with payloads.
+Implement the audio proxy route (`GET /calls/{call}/audio`) per spec 03.
+
+Validate: place a test call, click the audio player on call detail (should work via proxy even before Process Call). Click Process Call, see transcript appear within ~60 seconds for a 5-min call. Query events: should see download + transcript events with payloads.
 
 ### Step 7: Coaching pipeline (1-2 hours)
+
+**Before writing code: work through the Anthropic section of spec 08.** Verify the API endpoint, response shape, model identifier, and pricing. Update spec 05 and the cost calculation in spec 07's `EventLogger::recordCoaching()` if anything has changed.
 
 Create CoachingGenerator service per spec 05. Wire to the same "Process Call" flow.
 
@@ -134,7 +147,7 @@ Event::where('event_type', 'coaching_generated')->whereDate('created_at', today(
 
 ## Total estimated time
 
-13-17 hours of focused work. With breaks, Sat evening + Sunday should comfortably fit it. The events/logging additions add ~1.5 hours to the original estimate but pay for themselves the first time something breaks.
+15-20 hours of focused work. With breaks, Sat evening + Sunday should fit it but tightly. The verification time in spec 08 adds 1-2 hours but pays for itself by avoiding mid-build debugging.
 
 ## Critical paths
 
@@ -154,22 +167,26 @@ These three things will eat time if they go wrong. Front-load them:
 
 ## Things that are NOT fine to skip
 
+- Spec 08 verification of API details before steps 4, 6, 7
 - Pain points field as required on calls with conversations (spec 03)
 - Recording webhook (entire downstream depends on it)
 - ngrok tunnel running for the recording webhook to reach Laravel
 - The coaching skill at `docs/skills/01-jeb-blount.md` (the prompt content)
 - Events table + EventLogger (spec 07) — debugging without it is brutal
 - The eight required EventLogger call sites (spec 07)
+- Audio proxy route — Twilio recordings can't be embedded directly due to basic auth
 
 ## When to ask for help
 
 If any single step takes more than 2x its estimate, stop and surface it. The system is designed so each step is independently validatable. If step 4 (Twilio) is going sideways at hour 4, that's a sign to either simplify (skip recording for now, just get calling working) or escalate.
 
-## A note on the model string
+If spec 08's verification reveals something fundamentally broken in the architecture (e.g., Voice JS SDK doesn't pass custom params through), pause before working around it. The architectural assumption needs to be revisited at the design level.
 
-Spec 05 uses `claude-sonnet-4-6` as the default model. This was correct at time of writing — verify against Anthropic's current docs (https://docs.claude.com) when you wire up the API client. The config-driven design means the model is one `.env` change to update.
+## A note on the model string and pricing
 
-The cost calculation in `EventLogger::recordCoaching()` (spec 07) has hardcoded pricing per model. If pricing changes, update that map.
+Spec 05 uses `claude-sonnet-4-6` as the default model. This was Designer's belief at time of writing — verify against Anthropic's current docs (https://docs.claude.com) when you wire up the API client. The config-driven design means the model is one `.env` change to update.
+
+The cost calculation in `EventLogger::recordCoaching()` (spec 07) has hardcoded pricing per model. If pricing changes, update that map. Both are flagged in spec 08.
 
 ## A note on the events table
 
