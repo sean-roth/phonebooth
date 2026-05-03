@@ -4,11 +4,11 @@ This document is for the next Claude conversation that picks up phonebooth — w
 
 ## What phonebooth is
 
-A sales cockpit for Sean to cold-call Chicago small businesses. Browser-based softphone (Twilio Voice JS SDK) + lead management + automatic call recording + local transcription (faster-whisper) + Claude Desktop coaching via filesystem MCP. All in one Laravel dashboard running on Sean's OptiPlex 9020.
+A sales cockpit for Sean to cold-call Chicago small businesses. Browser-based softphone (Twilio Voice JS SDK) + lead management + recording disclosure workflow + automatic call recording + dual-channel local transcription (faster-whisper) + Claude Desktop coaching via filesystem MCP. All in one Laravel dashboard running on Sean's OptiPlex 9020.
 
-It exists because Sean is learning sales under runway pressure. He has anxiety about cold calling. The system removes every form of friction except picking up the phone, and produces structured coaching after every call (in Claude Desktop, not auto-generated). The pain-points field on every call is also doing customer discovery — patterns across 50+ calls reveal what to productize.
+It exists because Sean is learning sales under runway pressure. He has anxiety about cold calling. The system removes every form of friction except picking up the phone, captures the work as data, and stays inside Illinois recording-consent law.
 
-Phase 1 scope is deliberately small: leads list, cockpit (one call at a time), call detail with transcript and coaching display. No Twenty CRM yet (Phase 2). One sales framework (Jeb Blount). Manual lead briefs. Pay-as-you-go costs (~$5-25/month at Phase 1 volume — only Twilio, no API costs).
+Phase 1 scope: leads list, cockpit (one call at a time, with mandatory disclosure script displayed), call detail with attributed transcript and coaching display. No Twenty CRM yet (Phase 2). One sales framework (Jeb Blount). Manual lead briefs. Pay-as-you-go costs (~$5-25/month, only Twilio).
 
 ## Where things are
 
@@ -19,151 +19,161 @@ phonebooth/
 │   ├── handoff.md                              ← you are here
 │   ├── specs/
 │   │   ├── 00-build-order.md                   ← Engineer entry point
-│   │   ├── 01-architecture.md                  ← system overview
-│   │   ├── 02-data-model.md                    ← SQLite schema (leads, calls, events)
-│   │   ├── 03-routes-controllers.md            ← every HTTP route + form
-│   │   ├── 04-twilio-integration.md            ← softphone + recording
-│   │   ├── 05-whisper-claude-integration.md    ← Whisper pipeline (writes transcript files)
-│   │   ├── 06-targeting-brief.md               ← Phase 1 sales brief
-│   │   ├── 07-logging-and-events.md            ← logs + events table
+│   │   ├── 01-architecture.md
+│   │   ├── 02-data-model.md
+│   │   ├── 03-routes-controllers.md
+│   │   ├── 04-twilio-integration.md
+│   │   ├── 05-whisper-claude-integration.md    ← dual-channel transcription
+│   │   ├── 06-targeting-brief.md
+│   │   ├── 07-logging-and-events.md
 │   │   ├── 08-verification-checklist.md        ← MUST READ before relying on 04
-│   │   └── 09-claude-desktop-coaching.md       ← Claude Desktop MCP setup (Sean reads this)
+│   │   ├── 09-claude-desktop-coaching.md       ← Sean reads this for MCP setup
+│   │   └── 10-legal-compliance.md              ← Illinois consent — non-optional
 │   └── skills/
 │       └── 01-jeb-blount.md                    ← v1 coaching skill (loaded by Claude Desktop)
 ```
 
 ## Project state at handoff
 
-**Built:** nothing. The repo is spec-only. No Laravel app exists yet.
+**Built:** nothing. The repo is spec-only.
 
-**Spec'd:** the entire Phase 1 system, end-to-end. Architecture, data model, routes, integrations (Twilio + Whisper), logging, the v1 coaching skill, and the Claude Desktop coaching workflow.
+**Spec'd:** the entire Phase 1 system. Eleven specs (00-10) plus the Jeb Blount skill. Architecture, data model, routes, integrations, logging, coaching workflow, legal compliance.
 
 **Architecture (final):**
-- Dashboard handles calls, recording, transcription
-- Dashboard writes transcript markdown to `storage/app/coaching/transcripts/{call_id}.md`
-- Sean uses Claude Desktop (separately) with filesystem MCP to read transcripts and write coaching markdown to `storage/app/coaching/feedback/{call_id}.md`
+
+- Cockpit displays disclosure script at the top of every call (legal requirement per spec 10)
+- Dashboard handles calls and recording; recording auto-deletes if lead declines disclosure
+- Dashboard splits stereo recordings into two mono files (ffmpeg) and runs Whisper twice — once per channel
+- Merges segments by timestamp into an attributed transcript: `[00:14] SEAN: ...` / `[00:18] LEAD: ...`
+- Writes transcript markdown to `storage/app/coaching/transcripts/{call_id}.md`
+- Sean uses Claude Desktop separately with filesystem MCP to read transcripts and write coaching to `storage/app/coaching/feedback/{call_id}.md`
 - Dashboard reads coaching feedback files at display time
 
-**Verified against current docs:** very little. The Designer Claude wrote specs 04 and 05 from training-data memory. **Spec 08 lists every memory-derived detail that needs verification** during build steps 4 and 6.
+**Verified against current docs:**
 
-**Open decisions:**
-- Sales framework: locked to Jeb Blount for v1. Other frameworks are roadmap.
-- Industries to target: retailers + trades. Specific first-sprint pick is open.
-- Lead source: Google Maps Places API (Phase 2), manual list-building for Phase 0.
+- Illinois recording law (verified via web search this session — confirms all-party consent, AI transcription needs disclosure)
+- Twilio + faster-whisper + ngrok details — NOT verified, see spec 08
 
-## The verification gap
+The Engineer's first job in build steps 4 and 6 is to work through spec 08 and verify before relying on the code samples in specs 04 and 05.
 
-The Designer Claude was writing from memory throughout the design conversation. This came up at the end. By that point, web access wasn't available, so the gap was documented in spec 08 instead of fixed.
+## The full design history at this handoff
 
-Specs 04 (Twilio) and 05 (Whisper) contain code samples that are *probably* correct but haven't been confirmed against current docs. The architecture is sound; specific class names, parameter shapes, and library APIs may be stale.
+This system went through several design corrections that future Claudes should know about:
 
-The Engineer's first job in build steps 4 and 6 is to work through spec 08 and verify before relying on the code. If anything is wrong, fix it in the spec and commit.
+1. **Original:** dashboard hits Anthropic API for coaching (rejected — cost, complexity)
+2. **Pivot 1 (mid-conversation):** dashboard writes transcripts; Claude Desktop reads via MCP and writes feedback (current architecture)
+3. **Late catch:** dual-channel mixing to mono was discarding speaker attribution. Coaching quality would have been generic. Fixed in spec 05 — channels split and processed separately.
+4. **Late catch:** Illinois all-party consent law was never addressed in the original design. Recording without disclosure is a felony. Added spec 10 with disclosure script, declined_recording disposition, and auto-delete-on-decline.
 
-**Note: spec 08 used to also have an Anthropic API verification section. That's been removed because the architecture changed mid-design — the dashboard no longer integrates with Claude API. Coaching is done in Claude Desktop via filesystem MCP (spec 09). Spec 08 may still contain stale Anthropic content depending on whether it's been cleaned up.**
-
-## The Claude API → Claude Desktop pivot
-
-Late in the design conversation, Sean caught a regression. Earlier discussions had established that coaching would happen in Claude Desktop via MCP — but the spec had drifted into an Anthropic API integration in the dashboard.
-
-The pivot back to MCP for coaching:
-- **Saves money** (uses subscription, not API)
-- **Simpler** (no API integration, no key management, no token counting, no cost tracking)
-- **Better UX** (interactive coaching with follow-up questions, pattern recognition across calls)
-- **Original mental model** (Sean's "Claude Desktop as second viewpoint" intuition was the right one)
-
-This affected specs 05, 03, 00, README, handoff (this doc), and required a new spec 09. Specs 01, 02, 07, 08 may still have stale references to the API path that should be cleaned up during build (or left alone if not breaking — the engineer can use judgment).
+The repo's commit history shows the evolution. If specs disagree with each other on details, the higher-numbered or later-committed spec should generally win — design corrections came late.
 
 ## How Sean works (collaboration notes)
 
-Sean has a memory profile that captures most of this, but worth restating:
-
-- **Building is regulation.** Sean has explicitly said building is how he processes nervous energy and emotion.
-- **He has explicitly asked Claude to push back when grounded in fact.** Don't just defer.
+- **Building is regulation.** Sean processes nervous energy by building. Don't try to talk him out of building things — but flag scope creep.
+- **Push back when grounded in fact.** Sean has explicitly asked for this. Don't just defer.
 - **Runway is exhausted.** Every dollar matters. He's job-searching W-2 in a separate conversation.
-- **Pattern: treats every good idea as something to build immediately.** Worth flagging when conversation drifts toward scope creep.
+- **Pattern: treats every good idea as something to build immediately.** Worth flagging when conversation drifts toward "we could also..." territory.
 - **Planning a move to Chicago.** That's why phonebooth targets Chicago specifically.
-- **Background:** ESL teacher (8500+ classes), screenwriter (MA in Creative Writing), runs SOPs Nobody Reads (compliance training platform on Laravel with cryptographic audit trails). Strong technical chops; specifically asked for spec-led handoff.
+- **Background:** ESL teacher (8500+ classes), screenwriter (MA in Creative Writing), runs SOPs Nobody Reads. Strong technical chops; specifically asked for spec-led handoff.
+- **Working style:** Sean prefers stripped-down systems where the system itself is observable. The phonebooth's many tabs and features were a step away from this — future iterations may push back toward simpler.
 
 ## Working pattern: Designer → Engineer
-
-We've been operating Designer → Engineer split:
 
 - **Designer:** spec-level work in markdown
 - **Engineer:** implementation, reads specs, writes code
 
-The handoff is the spec. Designer doesn't write code into the repo (other than examples within spec docs). Engineer doesn't make architectural decisions — if something isn't covered, ask Designer.
+Designer doesn't write code into the repo. Engineer doesn't make architectural decisions — if something isn't covered, ask Designer.
 
 ## What the next conversation should probably do
-
-Depends on which Claude you are.
 
 ### If you're Designer continuing where we left off
 
 Likely scenarios:
-1. **Sean has questions before starting the build.** Answer them, refine specs.
+
+1. **Sean has questions before starting the build.** Answer them. Don't add new scope.
 2. **Sean wants to continue Phase 2 design.** Pull from "out of scope for Phase 1" sections.
 3. **Sean is post-field-testing and wants to redesign.** Listen to what he learned.
+4. **Sean wants to design a different system entirely.** That's fine — phonebooth is meant to be throwable.
 
-In all three: keep the verification gap front-of-mind. If web tools are available, the highest-leverage thing you can do is verify spec 08's open items against current docs.
+In any scenario: if web tools are available, the highest-leverage thing you can do is run the spec 08 verification checklist against current Twilio and faster-whisper docs.
 
-Also: if you notice stale references to "Claude API" or "Anthropic API" or "CoachingGenerator" in specs 01, 02, 07, or 08, those should be cleaned up. The architecture changed mid-design and not all specs were updated.
+A future skill that might be worth building: structured QA passes with named pass types (consistency, traceability, dead code, drift detection). The vague "review again" instruction tends to produce vague review. Sean has flagged this as a pattern worth addressing.
 
 ### If you're Engineer on the OptiPlex
 
 Read in this order:
+
 1. `README.md`
 2. `docs/handoff.md` (this file)
 3. `docs/specs/00-build-order.md`
-4. `docs/specs/08-verification-checklist.md` — internalize before touching specs 04 and 05
-5. `docs/specs/09-claude-desktop-coaching.md` — what Sean does with Claude Desktop
-6. The rest of the specs in numerical order
+4. `docs/specs/10-legal-compliance.md` — internalize before any code
+5. `docs/specs/08-verification-checklist.md` — internalize before specs 04 and 05
+6. `docs/specs/09-claude-desktop-coaching.md` — what Sean does with Claude Desktop
+7. The rest in numerical order
 
-Build sequence in spec 00. Step 7 is filesystem MCP setup for Claude Desktop (configuration, not code). Steps 4 and 6 require spec 08 verification first.
+Build sequence in spec 00. Spec 10's disclosure section on the cockpit and the auto-delete-on-decline behavior are non-negotiable; build them in step 4-5. Spec 05's dual-channel splitting is non-negotiable; build it in step 6.
 
-If something fundamental is broken (e.g., Voice JS SDK doesn't pass custom params through to TwiML), pause and surface it.
+If something fundamental seems broken, pause and surface it. Don't work around legal-compliance gaps or speaker-attribution gaps; those affect what the system fundamentally is.
 
 ### If you're Designer post-field-testing
 
-Sean said early: "I'll probably want to rebuild this system next weekend after some field testing." Likely scenario.
+Sean has explicitly anticipated rebuilding. Likely scenario.
 
 Ask:
+
 - What got used? What didn't?
-- Was the Claude Desktop coaching workflow actually used, or did Sean skip it?
+- Was the disclosure script natural to deliver? What was the decline rate?
+- Was the dual-channel attribution actually useful? Did Claude Desktop coaching produce better feedback because of it?
 - What did the pain_points data reveal?
 - What surprised you?
+- Did Twilio recording quality match what was expected? Any odd dropouts or distortions?
+- Was Twenty CRM-ish features missed, or was the simple leads list enough?
 
 Then decide: refactor in place or rebuild with sharper Phase 1 scope.
 
 ## Costs and operational reality
 
-Phonebooth runs on Sean's OptiPlex 9020 (32GB RAM, no GPU, Linux). Self-hosted, local network for Phase 1. Twilio webhooks reach the OptiPlex via ngrok.
+OptiPlex 9020, 32GB RAM, no GPU, Linux. Self-hosted, local network for Phase 1. Twilio webhooks reach via ngrok.
 
-Monthly costs at projected Phase 1 volume:
-- Twilio: ~$20 (number + minutes + recording)
-- Anthropic: $0 (no API integration; coaching uses Sean's Claude Desktop subscription)
-- ngrok: $0 (free tier)
+Monthly costs at Phase 1 volume:
+
+- Twilio: ~$5-25 (number + minutes + recording)
+- Anthropic: $0 (no API integration; coaching uses Claude Desktop subscription)
+- ngrok: $0 (free tier) or $8 (static URL)
 - Hosting: $0 (OptiPlex)
-
-The pay-as-you-go shape is intentional — no subscription costs that punish bad days.
 
 ## What's deliberately not built (Phase 1)
 
 - Twenty CRM (Phase 2)
 - Pre-call brief auto-generation (Phase 2)
-- Multiple coaching frameworks via Claude Desktop project switching (Phase 2)
-- Cost tracking dashboard UI (no API costs to track in Phase 1)
+- Multiple coaching frameworks (Phase 2)
+- Cost tracking dashboard UI (no API costs to track)
 - Audit hash chain (Phase 2)
 - Pretty UI (Phase 2)
 - Apollo / Google Maps API integration (Phase 2)
-- Territory tab with neighborhood context (Phase 2)
-- Pain-points pattern recognition automation (Phase 2 — Sean does this manually in Claude Desktop for now)
-- Speaker diarization (Phase 2)
+- Territory tab (Phase 2)
+- Auto pain-points pattern recognition (Phase 2 — Sean does manually in Claude Desktop)
+- Speaker diarization beyond channel splitting (current handles 95% case)
 - Real-time transcription (out)
-- Auto-coaching trigger when transcript appears (Phase 2)
+- Auto-coaching trigger (Phase 2)
 - Queue-based async processing (Phase 2)
 - User accounts / auth (Phase 2 if ever needed)
+- Pre-call automated TwiML disclosure message (Sean reads it himself in Phase 1)
+- Multi-state legal compliance (Illinois only)
+- Lead deletion UI (tinker for Phase 1)
+- DTMF support for navigating phone trees (Phase 2 if needed)
+- Emotional scaffolding for the calling work itself (Sean handles via journaling separately)
 
-Don't pull these forward into Phase 1 conversations.
+## What changed late and may have residual inconsistencies
+
+Several specs were updated near the end of design to accommodate the Claude Desktop pivot, the dual-channel fix, and the legal compliance addition. The visible inconsistencies were caught and fixed in this round, but the engineer should be alert for:
+
+- References to `coaching_feedback` or `coaching_framework` columns (should be removed everywhere — coaching is filesystem-based)
+- References to "all eight specs" or "all nine specs" (should now read "all eleven specs" — 00-10)
+- Claude API token counting in event payloads (removed; events table no longer tracks API costs)
+- Cost tracking UI mentions (no API costs to track)
+
+If you spot any of the above, fix them and commit.
 
 ## Repo etiquette
 
@@ -173,10 +183,15 @@ Don't pull these forward into Phase 1 conversations.
 
 ## Final note
 
-The Phase 1 system is good enough. It's not perfect — three review passes found real bugs, the verification gap means specs 04 and 05 still need eyes-on, and the late-stage MCP pivot may have left stale references in specs 01, 02, 07, 08.
+The Phase 1 system is good enough. It's not perfect, but it's grounded in:
 
-But Sean's stated criterion was "doesn't need to be perfect, I'll rebuild after field testing." Don't let perfectionism delay shipping.
+- Real legal verification (web search this session confirmed Illinois consent law)
+- Architectural correction (Claude API → Claude Desktop MCP)
+- Coaching quality fix (mono → dual-channel attribution)
+- Legal protection (disclosure script + auto-delete)
 
-The boulder is the calls themselves. Everything in this repo exists to make picking up the phone Monday morning easier than not picking it up.
+Sean's stated criterion is "doesn't need to be perfect, I'll rebuild after field testing." That criterion is even more apt now that field testing will reveal real legal/UX/quality questions the design phase couldn't.
+
+The boulder is the calls themselves. Everything in this repo exists to make picking up the phone Monday morning easier than not picking it up — and to keep that activity legal.
 
 Build well.
