@@ -94,10 +94,11 @@ Common gotcha: if your reverse proxy or tunnel rewrites the URL, the URL you pas
 
 **Docs:** https://ngrok.com/docs
 
-- [ ] Free tier provides HTTPS URLs
-- [ ] Free tier URL rotates on every restart
-- [ ] Paid tier pricing for static URL ($8/mo cited in spec)
-- [ ] cloudflared as a free alternative still exists
+- [x] Free tier provides HTTPS URLs — confirmed, via an "assigned dev domain" that persists across restarts
+- [x] Free tier URL no longer rotates — it is now a fixed assigned domain (changed from earlier behavior)
+- [x] **WARNING: Free tier now shows an interstitial page** on HTTP/S endpoints that requires a browser click-through. This BREAKS Twilio webhooks because Twilio's HTTP client cannot click through the interstitial. Use ngrok Hobbyist ($8-10/mo) or cloudflared Named Tunnel (free with your own domain) instead.
+- [x] Paid tier: Hobbyist at $8/mo (annual) or $10/mo (monthly) removes interstitial and gives custom ngrok subdomain
+- [x] cloudflared Named Tunnel still exists and is free — requires a Cloudflare account + domain with DNS on Cloudflare. Gives a stable, permanent public URL with no interstitial and no request limits.
 
 ## Things the Designer assumed about Sean's environment
 

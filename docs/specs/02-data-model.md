@@ -226,13 +226,12 @@ class Event extends Model
 {
     protected $fillable = ['event_type', 'subject_type', 'subject_id', 'payload'];
 
-    protected $casts = [
-        'payload' => 'array',
-    ];
-
     public $timestamps = false;
 
-    protected $dates = ['created_at'];
+    protected $casts = [
+        'payload' => 'array',
+        'created_at' => 'datetime',
+    ];
 }
 ```
 

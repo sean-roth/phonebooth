@@ -66,6 +66,7 @@ The system is intentionally simpler than earlier drafts: the call happens, Sean 
 namespace App\Http\Controllers;
 
 use App\Models\Call;
+use App\Services\EventLogger;
 use Illuminate\Http\Request;
 use Twilio\Jwt\AccessToken;
 use Twilio\Jwt\Grants\VoiceGrant;
@@ -101,7 +102,7 @@ class TwilioTokenController extends Controller
         ]);
     }
 
-    public function voice(Request $request)
+    public function voice(Request $request, EventLogger $events)
     {
         $toNumber = $request->input('To');
         $callId = $request->input('call_id');           // custom param from browser
@@ -111,6 +112,10 @@ class TwilioTokenController extends Controller
         // Associate our Call row with Twilio's CallSid
         if ($callId && $twilioCallSid) {
             Call::where('id', $callId)->update([
+                'twilio_call_sid' => $twilioCallSid,
+            ]);
+
+            $events->record('twilio_call_connected', 'call', (int) $callId, [
                 'twilio_call_sid' => $twilioCallSid,
             ]);
         }
@@ -180,7 +185,7 @@ export class PhoneboothDevice {
 
         this.device = new Device(data.token, {
             logLevel: 1,
-            codecPreferences: ['opus', 'pcmu'],
+            codecPreferences: [Device.Codec.Opus, Device.Codec.PCMU],
         });
 
         this.device.on('registered', () => this.notify('idle'));
@@ -310,10 +315,10 @@ function updateTimer() {
 }
 
 function enablePostCallForm() {
+    postCallForm.action = '/calls/' + currentCallId;
     postCallForm.querySelectorAll('input, select, textarea, button').forEach(el => {
         el.disabled = false;
     });
-    postCallForm.dataset.callId = currentCallId;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
