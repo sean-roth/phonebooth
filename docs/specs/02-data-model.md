@@ -4,7 +4,9 @@
 
 The SQLite schema. Two main tables (leads, calls), one events table for audit/debugging.
 
-Phase 1 uses SQLite (single-file local database). Phase 2 may migrate to Postgres for the Twenty CRM integration.
+Phase 1 uses SQLite. Phase 2 may migrate to Postgres for Twenty CRM integration.
+
+**Note: this spec was substantially simplified by spec 11 (recording pivot).** Earlier drafts had recording-related columns (`recording_url`, `recording_local_path`, `transcript`, `processed_at`, `twilio_recording_sid`) that were removed when the architecture stopped recording cold calls. The current schema reflects a calls-only-with-notes design.
 
 ## leads table
 
@@ -47,6 +49,7 @@ CREATE INDEX idx_leads_phone ON leads(phone);
 - `called` — called but no decision yet
 - `interested` — wants follow-up
 - `discovery_booked` — discovery call scheduled
+- `discovery_completed` — discovery call done (Phase 1 may not need this; Sean can check past calls table)
 - `disqualified` — won't pursue
 - `not_interested` — declined offer
 - `dead` — wrong number, out of business, never reaching
@@ -62,29 +65,18 @@ CREATE TABLE calls (
     -- Foreign key
     lead_id INTEGER NOT NULL,
 
-    -- Twilio identifiers
+    -- Twilio identifier (for the call leg, not for any recording)
     twilio_call_sid VARCHAR(50),
-    twilio_recording_sid VARCHAR(50),  -- captured from recording webhook for deletion API
-
-    -- Recording
-    recording_url TEXT,                 -- Twilio's URL (with .mp3 appended)
-    recording_local_path VARCHAR(255),  -- path on OptiPlex after download
-
-    -- Transcript (cached for fast display; canonical version is in coaching/transcripts/{id}.md)
-    transcript TEXT,
 
     -- Call metadata
     duration_seconds INTEGER,
     started_at TIMESTAMP,
     ended_at TIMESTAMP,
 
-    -- Outcome
+    -- Outcome — Sean's own observations replace AI-generated transcripts
     disposition VARCHAR(30),
     pain_points TEXT,
     notes TEXT,
-
-    -- Pipeline status
-    processed_at TIMESTAMP,             -- set when transcription completes
 
     -- Timestamps
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -101,11 +93,8 @@ CREATE INDEX idx_calls_started_at ON calls(started_at);
 
 ### Disposition enum (string column, validated in Laravel)
 
-Per spec 03 and spec 10:
-
 - `voicemail` — Voicemail left
 - `no_answer` — No answer / disconnected
-- `declined_recording` — Lead declined recording disclosure (recording auto-deleted)
 - `not_interested` — Not interested
 - `interested` — Interested, follow up
 - `discovery_booked` — Discovery call booked
@@ -113,27 +102,27 @@ Per spec 03 and spec 10:
 - `wrong_number` — Wrong number
 - `bad_number` — Bad number / dead line
 
+`declined_recording` was removed when the recording pipeline was removed (spec 11).
+
 ### Notes on the calls schema
 
-**No `coaching_feedback` or `coaching_framework` columns.** Coaching feedback lives in the filesystem at `storage/app/coaching/feedback/{call_id}.md`, written by Claude Desktop via filesystem MCP (spec 09). The dashboard reads these files at display time. The schema does not duplicate this content.
+**No recording columns.** Per spec 11, cold calls are not recorded. There is no `recording_url`, `recording_local_path`, `transcript`, `twilio_recording_sid`, or `processed_at` column. The dashboard tracks the call's existence and Sean's observations; that's it.
 
-This was a late architectural change. An earlier draft of this schema had `coaching_feedback TEXT` and `coaching_framework VARCHAR(50)` columns intended for storing API-generated coaching. Those columns were removed when the architecture pivoted to Claude Desktop.
+**No `coaching_feedback` or `coaching_framework` columns.** Coaching for *discovery calls* (not cold calls) lives in the filesystem at `storage/app/coaching/feedback/discovery-{filename}.md`, written by Claude Desktop via filesystem MCP. The schema does not duplicate this content. See spec 09.
 
-**`twilio_recording_sid` exists for deletion.** When a lead declines recording (`disposition === 'declined_recording'`), spec 03's CallController calls Twilio's DELETE endpoint to remove the recording from their servers. That call requires the recording SID, captured from the webhook. See spec 04's webhook handler.
-
-**`transcript` is cached.** The canonical transcript is the markdown file in `storage/app/coaching/transcripts/{call_id}.md` (with frontmatter, used by Claude Desktop). The DB column is a fast-read cache for the call detail page.
+**Sean's pain_points and notes are the cold-call coaching data.** Without transcripts, Sean's own real-time observations *are* the data. The pain_points field captures what the lead complained about; the notes field captures Sean's reflection on the call itself ("opened too fast," "good rapport," "should have asked X"). Phase 2 might add a structured "self-coaching" form; Phase 1 keeps it as free text.
 
 ## events table
 
-For traceback debugging. Append-only audit log of significant pipeline events. See spec 07 for full details.
+For traceback debugging. Append-only audit log of significant pipeline events. See spec 07.
 
 ```sql
 CREATE TABLE events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     event_type VARCHAR(50) NOT NULL,
-    subject_type VARCHAR(20) NOT NULL,    -- 'call', 'lead', 'system'
-    subject_id INTEGER,                    -- nullable for system events
-    payload TEXT,                          -- JSON
+    subject_type VARCHAR(20) NOT NULL,
+    subject_id INTEGER,
+    payload TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -142,21 +131,16 @@ CREATE INDEX idx_events_event_type ON events(event_type);
 CREATE INDEX idx_events_created_at ON events(created_at);
 ```
 
-Event types used in Phase 1 (per spec 07 and spec 10):
+Event types used in Phase 1 (per spec 07, simplified from earlier draft per spec 11):
 
 - `call_initiated` — user clicked Call
 - `twilio_call_connected` — Twilio's voice endpoint fired and we associated CallSid
-- `twilio_recording_received` — recording webhook fired
-- `recording_downloaded` — local file saved
-- `transcript_generated` — Whisper completed
-- `call_processed` — full pipeline succeeded
-- `consent_declined` — lead declined recording disclosure (per spec 10)
-- `recording_deleted` — recording removed from local disk and Twilio (per spec 10)
+- `call_completed` — call ended, Sean saved the post-call form
 - `error` — any pipeline failure
 
-## Migrations
+Recording-related events (`twilio_recording_received`, `recording_downloaded`, `transcript_generated`, `consent_declined`, `recording_deleted`) are removed.
 
-Laravel migrations should be one-per-table:
+## Migrations
 
 ```
 database/migrations/
@@ -165,7 +149,7 @@ database/migrations/
 └── 2026_05_01_000003_create_events_table.php
 ```
 
-The Engineer should not add `coaching_feedback` or `coaching_framework` columns to the calls migration. Those are intentionally absent — coaching is filesystem-based.
+The Engineer should not add `coaching_feedback`, `coaching_framework`, `recording_url`, `recording_local_path`, `transcript`, `twilio_recording_sid`, or `processed_at` columns to the calls migration. Those are intentionally absent.
 
 ## Eloquent models
 
@@ -211,18 +195,15 @@ class Call extends Model
 {
     protected $fillable = [
         'lead_id',
-        'twilio_call_sid', 'twilio_recording_sid',
-        'recording_url', 'recording_local_path',
-        'transcript', 'duration_seconds',
+        'twilio_call_sid',
+        'duration_seconds',
         'started_at', 'ended_at',
         'disposition', 'pain_points', 'notes',
-        'processed_at',
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
         'ended_at' => 'datetime',
-        'processed_at' => 'datetime',
     ];
 
     public function lead(): BelongsTo
@@ -249,7 +230,7 @@ class Event extends Model
         'payload' => 'array',
     ];
 
-    public $timestamps = false;  // only created_at
+    public $timestamps = false;
 
     protected $dates = ['created_at'];
 }
@@ -257,9 +238,10 @@ class Event extends Model
 
 ## Out of scope for Phase 1
 
-- Foreign-key enforcement on `events.subject_id` (intentional — events table is loose audit log)
-- Soft deletes on leads or calls (would conflict with the auto-delete-on-decline behavior for declined_recording)
+- Foreign-key enforcement on `events.subject_id` (intentional)
+- Soft deletes on leads or calls
 - Lead deduplication beyond unique phone constraint
 - Multi-tenant scoping
 - Encryption at rest
-- Connection to Twenty CRM (Phase 2 — will require lead schema additions or sync mechanism)
+- Connection to Twenty CRM (Phase 2)
+- Discovery call records as separate entity (Phase 1: discovery calls are tracked via lead status updates, not as DB records)
