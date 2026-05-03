@@ -2,22 +2,20 @@
 
 ## Why this exists
 
-The Designer Claude that wrote specs 01-07 worked from training-data memory of Twilio, Anthropic, faster-whisper, and ngrok — **not from current official documentation**. The web_fetch tool was unavailable at the end of the design conversation when this gap was identified, so verification was deferred to the Engineer.
-
-This means specific API details (class names, parameter names, exact pricing, feature availability, version requirements) in specs 04 and 05 may be stale or wrong. The overall architecture and flow are sound; it's the implementation-level details that need confirmation.
+The Designer Claude that wrote specs 04 and 05 worked from training-data memory of Twilio and faster-whisper, **not from current official documentation**. The architecture and flow are sound; specific implementation details (class names, parameter names, exact pricing, feature availability, version requirements) may be stale.
 
 This document lists every specific detail to verify, with the docs URL where to check. The Engineer should work through this during the relevant build steps.
+
+**Note:** an earlier version of this spec also covered the Anthropic Messages API. That section was removed when the architecture pivoted from API-based coaching to Claude Desktop with filesystem MCP (see specs 05 and 09). The dashboard does not call the Anthropic API; verification of API details is no longer needed for Phase 1.
 
 ## How to use this
 
 During build:
 - **Before step 4 (Twilio infrastructure):** verify the Twilio sections below
-- **Before step 6 (Whisper):** verify the faster-whisper section
-- **Before step 7 (Coaching):** verify the Anthropic Messages API section
+- **Before step 6 (Whisper):** verify the faster-whisper section AND the dual-channel splitting section
+- **Before step 7 (filesystem MCP setup):** verify the MCP filesystem server documentation (spec 09 has the URL)
 
 When you find something wrong, **fix it in the relevant spec file and commit**. Future Claudes (and your future self) will work from the verified version. A wrong API detail discovered at hour 3 of build is much cheaper to fix than at hour 8.
-
-If anything has changed materially (e.g., entirely new SDK, breaking API change), update both the spec and any references in spec 00 (build order). Add a note in the commit message: "Verified against docs YYYY-MM-DD."
 
 ## Twilio: account, numbers, pricing
 
@@ -31,7 +29,6 @@ If anything has changed materially (e.g., entirely new SDK, breaking API change)
 - [ ] Recording storage cost (~$0.0005/min/month)
 - [ ] Inbound minute rate (~$0.0085/min)
 - [ ] Trial credit allowance / minimum upgrade balance ($20)
-- [ ] Whether SMS A2P registration is required for outbound texting (it is — but the cost ($19.50 one-time + $1.50-3/mo) may have changed)
 
 If pricing has shifted significantly, update the cost expectations in spec 04 and the architecture cost summary in spec 01.
 
@@ -66,9 +63,7 @@ The biggest risk: the SDK could have been refactored into a different namespace 
 - [ ] `Call` events: `accept`, `disconnect`, `cancel`, `reject`
 - [ ] `Call.disconnect()` for hanging up
 
-If custom params are NOT passed through to the voice endpoint, the call_id race condition fix in spec 04 won't work. This is the single most important Twilio detail to verify.
-
-Alternative if custom params don't work: associate by phone number + recent timestamp, or use the Twilio API's calls.create() server-side instead of the browser SDK.
+If custom params are NOT passed through to the voice endpoint, the call_id flow in spec 04 won't work. This is the single most important Twilio detail to verify.
 
 ## Twilio: TwiML `<Dial>` and recording
 
@@ -78,27 +73,36 @@ Alternative if custom params don't work: associate by phone number + recent time
 - [ ] `recordingStatusCallback` attribute on `<Dial>` for the webhook URL
 - [ ] `recordingStatusCallbackMethod` and `recordingStatusCallbackEvent` attributes
 - [ ] `callerId` attribute for setting outbound caller ID
+- [ ] **The dual-channel format is genuinely stereo** (not stereo-encoded mono). Verify by testing — the spec 05 channel-splitting workflow depends on the recording having distinct left and right audio.
 
 ## Twilio: Recording webhook
 
 **Docs:** https://www.twilio.com/docs/voice/api/recording#http-status-callbacks-recording-resource
 
-This is the most important section to verify. Spec 04 makes a specific claim about which CallSid the webhook receives:
-
-> The recording webhook for `<Dial record="record-from-answer-dual">` receives the **parent** CallSid (the call between browser and Twilio), not the child CallSid (the call between Twilio and the lead).
-
-- [ ] **Verify which CallSid the webhook actually sends.** Check Twilio's docs for the parameters list and explicitly confirm whether it's the parent or child for `<Dial>`-initiated dual-channel recordings.
+- [ ] **Verify which CallSid the webhook actually sends.** Check Twilio's docs and explicitly confirm whether it's the parent or child for `<Dial>`-initiated dual-channel recordings.
 - [ ] Other parameters: `RecordingSid`, `RecordingUrl`, `RecordingDuration`, `RecordingStatus`, `RecordingChannels`, `RecordingStartTime`
 - [ ] Whether `ParentCallSid` is also included as a separate parameter
-- [ ] Whether the `RecordingUrl` requires `.mp3` appended for direct playback (or some other format)
+- [ ] Whether the `RecordingUrl` requires `.mp3` appended for direct playback
 - [ ] HTTPS requirement for callback URLs
 - [ ] Twilio's retry behavior on non-200 webhook responses
 
-If the webhook actually sends the *child* CallSid: spec 04's matching logic needs to change. The voice TwiML endpoint would need to be replaced with an `action` callback on `<Dial>` that fires when the dial completes (with `DialCallSid`), and the voice endpoint would just associate the parent. Two-step linking.
+If the webhook actually sends the *child* CallSid: spec 04's matching logic needs to change.
 
 If the webhook sends both via `ParentCallSid`: simpler — match either.
 
-The build-step-4 setup checklist already includes "confirm CallSid in webhook matches twilio_call_sid in calls table." If that confirmation fails, this is where to debug.
+## Twilio: Recording deletion API
+
+**Docs:** https://www.twilio.com/docs/voice/api/recording#delete-a-recording-resource
+
+This is needed for spec 10's auto-delete-on-decline behavior.
+
+- [ ] DELETE endpoint format: `DELETE /2010-04-01/Accounts/{AccountSid}/Recordings/{RecordingSid}.json`
+- [ ] Authentication uses basic auth with Account SID + Auth Token
+- [ ] Successful deletion returns 204 No Content
+- [ ] Whether deletion is permanent or moves to soft-deleted state
+- [ ] Whether the recording-storage billing stops at deletion or continues until end of billing period
+
+If the endpoint format differs, update spec 03's `deleteRecording()` method.
 
 ## Twilio: Webhook signature verification
 
@@ -109,26 +113,7 @@ The build-step-4 setup checklist already includes "confirm CallSid in webhook ma
 - [ ] URL passed to validator must include scheme + full path (no trailing slash unless the actual URL has one)
 - [ ] Whether body params are included in signature computation for POST webhooks (they are, but verify)
 
-Common gotcha: if your reverse proxy or tunnel rewrites the URL (e.g., adds/removes a port), the URL you pass to the validator must match what Twilio used. ngrok preserves the URL but it's worth confirming.
-
-## Anthropic: Messages API
-
-**Docs:** https://docs.claude.com/en/api/messages
-**Models doc:** https://docs.claude.com/en/docs/about-claude/models/all-models
-
-- [ ] Endpoint: `https://api.anthropic.com/v1/messages`
-- [ ] Required headers: `x-api-key`, `anthropic-version`, `content-type`
-- [ ] Current `anthropic-version` to use (spec uses `2023-06-01` — still supported but may not be current best practice)
-- [ ] Request body shape: `model`, `max_tokens`, `messages` (array of `{role, content}`)
-- [ ] Response shape: `content[0].text` for the text response
-- [ ] Current Sonnet model identifier (spec uses `claude-sonnet-4-6`)
-- [ ] Current Sonnet pricing per million input/output tokens (spec assumes $3/M in, $15/M out)
-- [ ] Whether prompt caching could reduce costs for the repeated skill prompt content (would be a Phase 2 optimization)
-- [ ] Rate limits at the spec's projected volume (~10-30 calls per day, well under any tier)
-
-If pricing is wrong: update `EventLogger::recordCoaching()` cost calculation in spec 07.
-If model string is wrong: update `services.anthropic.model` default in spec 05.
-If response shape is different: update `CoachingGenerator::generate()` parsing in spec 05.
+Common gotcha: if your reverse proxy or tunnel rewrites the URL, the URL you pass to the validator must match what Twilio used.
 
 ## faster-whisper
 
@@ -146,15 +131,26 @@ If response shape is different: update `CoachingGenerator::generate()` parsing i
 - [ ] Memory requirements for `small` model on int8 (~1.5GB)
 - [ ] Whether it requires ffmpeg installed system-wide (yes, but confirm)
 - [ ] Default model download location (`~/.cache/huggingface/`)
-- [ ] Approximate speed on CPU for `small` model (real-world benchmarks may differ from spec estimates)
+- [ ] Approximate speed on CPU for `small` model
 
 The faster-whisper API is fairly stable but the segments iterator behavior or kwarg names may have evolved.
+
+## Dual-channel splitting via ffmpeg
+
+This is new in the updated spec 05 (channels are split separately and transcribed in two passes for speaker attribution).
+
+- [ ] ffmpeg `-map_channel` syntax produces clean mono output files
+- [ ] Verify with `ffprobe`: output should report `channels=1` for both split files
+- [ ] If `-map_channel` doesn't work, alternative is `-af "pan=mono|c0=c0"` and `-af "pan=mono|c0=c1"`
+- [ ] ffmpeg version on the OptiPlex (some older versions handle channel mapping differently)
+
+The splitting test in spec 05's "First-run notes" verifies this end-to-end. Run that test before processing real call audio.
 
 ## ngrok
 
 **Docs:** https://ngrok.com/docs
 
-- [ ] Free tier provides HTTPS URLs (it does, but confirm)
+- [ ] Free tier provides HTTPS URLs
 - [ ] Free tier URL rotates on every restart (confirm — there may be free static URLs now)
 - [ ] Paid tier pricing for static URL ($8/mo cited in spec)
 - [ ] cloudflared as a free alternative still exists and works similarly
@@ -163,23 +159,21 @@ If cloudflared has changed or ngrok has free static URLs now, update spec 04.
 
 ## Things the Designer assumed about Sean's environment
 
-These weren't checked; the Engineer can confirm:
-
-- [ ] Python 3.10+ on the OptiPlex (Sean uses it for Clara work, should be there)
+- [ ] Python 3.10+ on the OptiPlex
 - [ ] ffmpeg installed (`which ffmpeg`)
 - [ ] Node.js / npm version compatible with current `@twilio/voice-sdk`
 - [ ] PHP version compatible with current Laravel (Laravel 11 needs PHP 8.2+; Laravel 12 needs PHP 8.3+)
 - [ ] Composer is installed and current
-- [ ] Sufficient disk for recordings (calls accumulate — at ~1MB/minute, 220 calls/month × 5min × 1MB = ~1.1GB/month)
+- [ ] Sufficient disk for recordings (~1MB/minute, 220 calls/month × 5min × 1MB = ~1.1GB/month before any deletion)
 
 ## Quick verification template
 
-For each section above, the verification flow is:
+For each section above:
 
 1. Open the docs URL
 2. Read for ~3-5 minutes, comparing to the relevant spec section
 3. If everything matches: check the boxes, move on
-4. If something's wrong: fix the spec file, commit with message referencing this checklist
+4. If something's wrong: fix the spec file, commit
 5. If something's MAJORLY wrong (architectural assumption broken): pause and surface it before continuing
 
 Don't skip this. The Designer Claude was confident-sounding but working from memory. Trust the docs.
@@ -190,9 +184,18 @@ In rough order of "if this is wrong it would hurt the most":
 
 1. **Voice JS SDK custom params propagation to TwiML voice endpoint** — the entire call_id flow depends on this
 2. **Parent vs child CallSid in recording webhook** — if wrong, recording webhook never matches a call row
-3. **Anthropic API response shape** — if `content[0].text` isn't right, coaching saves empty
-4. **Twilio PHP SDK class names** — if namespaces have changed, voice endpoint won't compile
-5. **Anthropic Sonnet model string** — if `claude-sonnet-4-6` is wrong or deprecated, API returns 404
+3. **Recording deletion API endpoint format** — the spec 10 auto-delete depends on this
+4. **ffmpeg `-map_channel` syntax** — if wrong, dual-channel attribution fails (silently in some cases)
+5. **Twilio PHP SDK class names** — if namespaces have changed, voice endpoint won't compile
 6. **faster-whisper transcribe() return shape** — if segments aren't iterable with .start/.end/.text, the script breaks
 
-Items 1, 2, and 3 are existential to the Phase 1 system working at all. Verify those first.
+Items 1, 2, 3, and 4 are high-impact for Phase 1 working at all. Verify those first.
+
+## What this verification cannot tell you
+
+This checklist verifies APIs against current documentation. It does not verify:
+
+- Whether the architectural decisions are sound (that's spec 01 + design conversation territory)
+- Whether the legal compliance approach in spec 10 is correct for Sean's use case (that needs an attorney)
+- Whether the coaching framework in `docs/skills/01-jeb-blount.md` actually produces useful coaching (that needs field testing)
+- Whether the cockpit UI is usable under stress (that needs Sean using it Monday)
