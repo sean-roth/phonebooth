@@ -6,12 +6,12 @@ How phonebooth records what happened, so debugging at 9 AM Monday is fast.
 
 Two parallel systems:
 
-1. **Laravel logs** — three named channels for tracing pipeline behavior, debugging errors
-2. **events table** — append-only structured audit log of significant pipeline events, queryable via tinker
-
-Both have the same purpose (knowing what happened) at different fidelity. Logs capture the gory detail; events table captures the timeline.
+1. **Laravel logs** — three named channels for tracing pipeline behavior
+2. **events table** — append-only structured audit log of significant events, queryable via tinker
 
 When something breaks, the events table tells you *where* in the pipeline it died. The logs tell you *why*.
+
+**Note: this spec was simplified by spec 11 (recording pivot).** Earlier drafts had recording-related events (`twilio_recording_received`, `recording_downloaded`, `transcript_generated`, `consent_declined`, `recording_deleted`) and Anthropic API cost-tracking events. All removed; the system tracks call lifecycle only.
 
 ## Logging channels
 
@@ -46,11 +46,11 @@ When something breaks, the events table tells you *where* in the pipeline it die
 
 ### Channel purposes
 
-**`phonebooth_calls`** — call lifecycle (initiate, connect, hangup, save). Used by CallController and the cockpit JS-driven endpoints. When a call mysteriously doesn't show up in the leads list, look here.
+**`phonebooth_calls`** — call lifecycle (initiate, connect, hangup, save). Used by CallController and the cockpit JS-driven endpoints.
 
-**`phonebooth_webhooks`** — every webhook arrival from Twilio (recording, status). The full payload is logged as JSON. When the recording webhook isn't matching a call, this is where you diff what Twilio sent vs. what we have.
+**`phonebooth_webhooks`** — webhook arrivals from Twilio (status callbacks). Full payload as JSON.
 
-**`phonebooth_pipeline`** — Whisper subprocess output, file paths, timing. Used by the Process Call orchestrator and its services. When transcription is slow or failing, look here.
+**`phonebooth_pipeline`** — kept for consistency with previous design even though the post-call processing pipeline was removed. Phase 2 may reintroduce a pipeline (e.g., for discovery-call coaching auto-import); this channel is the home for that work.
 
 Use them like this:
 
@@ -64,7 +64,7 @@ Log::channel('phonebooth_calls')->info('Call initiated', [
 
 ## Events table
 
-The events table is the structured-data side of logging. Every significant pipeline event becomes a row.
+The structured-data side of logging. Every significant event becomes a row.
 
 Schema is in spec 02:
 
@@ -72,7 +72,7 @@ Schema is in spec 02:
 events (id, event_type, subject_type, subject_id, payload, created_at)
 ```
 
-`payload` is JSON, allowing per-event-type structure without schema changes.
+`payload` is JSON.
 
 ## EventLogger service
 
@@ -99,11 +99,9 @@ class EventLogger
 }
 ```
 
-Inject it into controllers and services that need to record events. (Or use Laravel's facade pattern if preferred — keep it simple.)
-
 ## Required event call sites in Phase 1
 
-Per spec 03, spec 04, and spec 10, the Engineer should add these EventLogger calls:
+Per spec 03 and spec 04, the Engineer should add these EventLogger calls:
 
 1. **`call_initiated`** — `CallController::store()` after creating the call row
    ```php
@@ -120,78 +118,36 @@ Per spec 03, spec 04, and spec 10, the Engineer should add these EventLogger cal
    ]);
    ```
 
-3. **`twilio_recording_received`** — `TwilioWebhookController::recording()` after the call row update succeeds
+3. **`call_completed`** — `CallController::update()` after Sean saves the post-call form
    ```php
-   $events->record('twilio_recording_received', 'call', $call->id, [
-       'twilio_call_sid' => $callSid,
-       'twilio_recording_sid' => $recordingSid,
-       'recording_url' => $call->recording_url,
-       'duration_seconds' => (int) $duration,
+   $events->record('call_completed', 'call', $call->id, [
+       'disposition' => $call->disposition,
    ]);
    ```
 
-4. **`recording_downloaded`** — `RecordingDownloader::download()` on success
-   ```php
-   $events->record('recording_downloaded', 'call', $call->id, [
-       'local_path' => $path,
-       'size_bytes' => filesize($path),
-   ]);
-   ```
-
-5. **`transcript_generated`** — `Transcriber::transcribe()` on success, capturing timing
-   ```php
-   $start = microtime(true);
-   // ... transcribe both channels ...
-   $duration = microtime(true) - $start;
-   $events->record('transcript_generated', 'call', $call->id, [
-       'transcript_length' => strlen($transcript),
-       'transcribe_seconds' => round($duration, 2),
-       'left_segments' => count($leftSegments),
-       'right_segments' => count($rightSegments),
-   ]);
-   ```
-
-6. **`call_processed`** — `CallController::process()` after the full pipeline succeeds
-   ```php
-   $events->record('call_processed', 'call', $call->id, []);
-   ```
-
-7. **`consent_declined`** — `CallController::update()` when disposition is set to `declined_recording` (per spec 10)
-   ```php
-   if ($call->disposition === 'declined_recording') {
-       $events->record('consent_declined', 'call', $call->id, []);
-   }
-   ```
-
-8. **`recording_deleted`** — also in `CallController::update()` after the recording is deleted (per spec 10)
-   ```php
-   $events->record('recording_deleted', 'call', $call->id, [
-       'reason' => 'declined_recording',
-   ]);
-   ```
-
-9. **`error`** — every catch block in the pipeline
+4. **`error`** — every catch block
    ```php
    catch (\Exception $e) {
        $events->record('error', 'call', $call->id, [
-           'step' => 'transcribe',  // or whichever step failed
+           'step' => 'whichever_step_failed',
            'message' => $e->getMessage(),
-           'trace' => $e->getTraceAsString(),  // include for Phase 1 debugging
+           'trace' => $e->getTraceAsString(),
        ]);
-       throw $e;  // re-throw after logging
+       throw $e;
    }
    ```
 
+That's it. Four event types in Phase 1. Earlier drafts had nine; the recording pipeline removal cut it down significantly.
+
 ## Sample debugging session
 
-Monday at 9:30 AM, a call doesn't show coaching feedback in the dashboard. Sean opens tinker:
+A call doesn't show up in the leads list. Sean opens tinker:
 
 ```php
-// Find the call
-$call = Call::latest()->first();
-echo $call->id;  // 47
+$lead = Lead::where('business_name', 'like', 'Acme%')->first();
+$call = Call::where('lead_id', $lead->id)->latest()->first();
+echo $call?->id;  // 47
 
-// Get its event timeline
 Event::where('subject_type', 'call')
     ->where('subject_id', 47)
     ->orderBy('created_at')
@@ -204,45 +160,36 @@ Output:
 [
     { event_type: 'call_initiated', created_at: '09:14:22' },
     { event_type: 'twilio_call_connected', created_at: '09:14:25' },
-    { event_type: 'twilio_recording_received', created_at: '09:18:12' },
-    { event_type: 'recording_downloaded', created_at: '09:19:01' },
-    { event_type: 'transcript_generated', created_at: '09:20:14' },
-    { event_type: 'call_processed', created_at: '09:20:14' },
+    { event_type: 'call_completed', created_at: '09:18:30' },
 ]
 ```
 
-Pipeline succeeded. Coaching is missing because Sean hasn't run Claude Desktop yet — that's not a bug, that's the workflow per spec 09.
+Pipeline succeeded. If a `call_completed` event were missing, the form save failed; if `twilio_call_connected` were missing, the call never connected through Twilio.
 
-If instead an `error` event appeared, the payload tells you which step failed:
+If an `error` event appears, the payload tells you which step:
 
 ```
-{ event_type: 'error', payload: { step: 'transcribe', message: 'ffmpeg subprocess failed: ...' } }
+{ event_type: 'error', payload: { step: 'twilio_voice', message: '...' } }
 ```
 
-Then `tail storage/logs/phonebooth_pipeline-2026-05-04.log` shows the full stack and what ffmpeg said.
+Then `tail storage/logs/phonebooth_calls-2026-05-04.log` shows the full stack.
 
 ## Useful queries
 
-**Calls processed today:**
+**Calls completed today:**
 ```php
-Event::where('event_type', 'call_processed')
+Event::where('event_type', 'call_completed')
     ->whereDate('created_at', today())
     ->count();
 ```
 
-**Decline rate (per spec 10 — for tuning the disclosure script):**
+**Disposition distribution this week:**
 ```php
-$calls = Event::where('event_type', 'call_initiated')->count();
-$declines = Event::where('event_type', 'consent_declined')->count();
-echo $declines / max($calls, 1);  // ratio
-```
-
-**Transcription performance distribution:**
-```php
-Event::where('event_type', 'transcript_generated')
+Event::where('event_type', 'call_completed')
+    ->where('created_at', '>=', now()->subWeek())
     ->get()
-    ->pluck('payload.transcribe_seconds')
-    ->avg();
+    ->groupBy(fn($e) => $e->payload['disposition'] ?? 'unknown')
+    ->map->count();
 ```
 
 **Errors by step:**
@@ -255,16 +202,16 @@ Event::where('event_type', 'error')
 
 ## What this is NOT
 
-- A real-time monitoring system (no dashboards, no alerting)
+- A real-time monitoring system
 - A cost tracking system (Phase 1 has no API costs to track; Twilio costs are visible in their console)
-- A user activity log (events are about pipeline behavior, not "Sean clicked X at Y")
-- A replacement for Laravel's default error logging (still want exception traces, just not exclusively in logs)
+- A user activity log
+- A replacement for Laravel's default error logging
 
 ## Out of scope for Phase 1
 
-- Cost tracking events (no Anthropic API; no per-call cost to track)
-- Token counting (no LLM inference happens in the dashboard)
-- Hash-chain audit log (Phase 2 — could derive from events table)
-- Event-driven side effects (events are recorded, never trigger work — they're logs)
-- Streaming/tail UI for events (Phase 2 — useful for live debugging)
-- Retention policy (events accumulate; truncate manually as needed)
+- Cost tracking events (no API; Twilio costs visible in their console)
+- Hash-chain audit log (Phase 2)
+- Event-driven side effects
+- Streaming/tail UI for events
+- Retention policy
+- Discovery-call coaching events (Phase 1's discovery-call workflow is manual; if Phase 2 automates it, those events go here)
