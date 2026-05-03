@@ -2,153 +2,264 @@
 
 ## Purpose of this document
 
-Defines the SQLite schema for Phase 1. Three tables: `leads`, `calls`, and `events`. Designed to be extended in Phase 2 without migration pain (Phase 2 will add Twenty integration, more frameworks, hash-chained audit log, etc., but won't need to restructure these core tables).
+The SQLite schema. Two main tables (leads, calls), one events table for audit/debugging.
 
-The `events` table is documented in detail in spec 07 (logging-and-events), not here. This document covers `leads` and `calls`. Both are part of the day-one schema.
+Phase 1 uses SQLite (single-file local database). Phase 2 may migrate to Postgres for the Twenty CRM integration.
 
-## Engineering notes
+## leads table
 
-- SQLite via Laravel's default `database/database.sqlite`
-- Migrations live in `database/migrations/`
-- Use Laravel's standard `id`, `created_at`, `updated_at` conventions on every table (except `events`, which is append-only — see spec 07)
-- Soft deletes are NOT used in Phase 1 (keep it simple)
-- Foreign keys enforced (SQLite supports this with `PRAGMA foreign_keys=ON`)
+```sql
+CREATE TABLE leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-## Table: `leads`
+    -- Identity
+    business_name VARCHAR(255) NOT NULL,
+    contact_name VARCHAR(255),
+    phone VARCHAR(20) NOT NULL UNIQUE,
+    email VARCHAR(255),
+    website VARCHAR(255),
 
-A lead is a business to potentially call. One row per business, even if multiple people work there. (In Phase 2 when Twenty arrives, leads here become Companies in Twenty and contact people become a separate concept. For Phase 1, owner-operated small businesses mean the business and the contact are effectively the same entity.)
+    -- Categorization
+    industry VARCHAR(100),
+    neighborhood VARCHAR(100),
+    address VARCHAR(255),
 
-### Columns
+    -- Brief and notes
+    brief TEXT,                   -- markdown, manual prep notes for the call
+    source VARCHAR(50),           -- where this lead came from ('csv_import', 'manual', etc.)
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | INTEGER | Primary key, auto-increment |
-| `business_name` | TEXT | Required. The business name. |
-| `contact_name` | TEXT | Nullable. Owner's name if known. |
-| `phone` | TEXT | Required. Stored in E.164 format (`+13125551234`). Validation on import. |
-| `website` | TEXT | Nullable. Full URL with scheme. |
-| `address` | TEXT | Nullable. Free-text address. |
-| `neighborhood` | TEXT | Nullable. Chicago neighborhood name (Logan Square, Wicker Park, etc.). For grouping in the leads list. |
-| `industry` | TEXT | Nullable. Free-text industry tag. |
-| `brief` | TEXT | Nullable. Markdown. The pre-call brief. Manually written for Phase 1. |
-| `status` | TEXT | Required. Default `'new'`. Enum-like: `new`, `called`, `interested`, `discovery_booked`, `disqualified`, `not_interested`, `dead`. |
-| `source` | TEXT | Nullable. Where this lead came from (`google_maps`, `manual_search`, `referral`, etc.). |
-| `notes` | TEXT | Nullable. Free-text notes about the lead (not call-specific). |
-| `created_at` | TIMESTAMP | Standard Laravel. |
-| `updated_at` | TIMESTAMP | Standard Laravel. |
+    -- Status tracking
+    status VARCHAR(30) DEFAULT 'new',
+    last_call_date TIMESTAMP,
 
-### Indexes
-- `phone` — unique. Prevents accidental duplicate imports.
-- `status` — non-unique. Used for filtering the leads list.
+    -- Timestamps
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-### Constraints
-- `business_name` and `phone` are NOT NULL.
-- `phone` must validate as E.164. Use a Laravel form request validator on import; reject bad rows.
-
-## Table: `calls`
-
-A call is one attempt to reach a lead. One row per dialing attempt, regardless of outcome (voicemail, no answer, conversation, etc.).
-
-### Columns
-
-| Column | Type | Notes |
-|---|---|---|
-| `id` | INTEGER | Primary key. |
-| `lead_id` | INTEGER | Required. FK to `leads.id`. ON DELETE RESTRICT (don't let leads with calls be deleted). |
-| `twilio_call_sid` | TEXT | Required after Twilio confirms the call. Twilio's unique ID for the call. Set by the voice TwiML endpoint. |
-| `started_at` | TIMESTAMP | When the call connected (or attempt began). |
-| `ended_at` | TIMESTAMP | Nullable. When the call ended. |
-| `duration_seconds` | INTEGER | Nullable. Twilio reports this in the recording webhook. |
-| `recording_url` | TEXT | Nullable. Twilio's recording URL with `.mp3` appended. Saved when recording webhook fires. |
-| `recording_local_path` | TEXT | Nullable. Path on disk if we've downloaded it for Whisper. |
-| `transcript` | TEXT | Nullable. Plain text. Whisper output. |
-| `coaching_feedback` | TEXT | Nullable. Markdown. Claude API output. |
-| `coaching_framework` | TEXT | Nullable. Which framework was used (`spin`, `jeb_blount`, etc.). For Phase 1, only one will be used; column exists so Phase 2 doesn't need migration. |
-| `disposition` | TEXT | Nullable. Set after call by user. Enum-like: `voicemail`, `no_answer`, `not_interested`, `interested_followup`, `discovery_booked`, `disqualified`, `wrong_number`, `bad_number`. |
-| `pain_points` | TEXT | Nullable. Free-text. **The single most important data field for long-term value.** What the lead complained about, what eats their time, what they wish they had. Captured even when call is "no" or voicemail (in voicemail case, this is empty; for "not interested" calls, sometimes the user gets a sentence of pain before the hangup — capture it). |
-| `notes` | TEXT | Nullable. Free-text notes about the call itself. |
-| `processed_at` | TIMESTAMP | Nullable. When "Process Call" was run (transcript + coaching generated). NULL means not yet processed. |
-| `created_at` | TIMESTAMP | Standard. |
-| `updated_at` | TIMESTAMP | Standard. |
-
-### Indexes
-- `lead_id` — for "show me all calls to this lead"
-- `twilio_call_sid` — unique. Used by the webhook handler to find the right call row.
-- `created_at` — for chronological listing.
-
-### Constraints
-- `lead_id` NOT NULL.
-- `twilio_call_sid` unique, can be NULL briefly during call creation but must be set before the call ends.
-
-## Table: `events`
-
-The events table captures structured, timestamped, queryable records of every meaningful state transition in the system. It is the substrate for traceback debugging, cost tracking, and (Phase 2) the cryptographic audit log.
-
-**Full schema and event types catalog: see spec 07 (logging-and-events.md).**
-
-The events table is part of the day-one Phase 1 build. Do not skip it — it pays for itself the first time something breaks in production.
-
-## Lifecycle of a call row
-
-1. **Row created** when user clicks "Call" — `lead_id` set, `started_at` set to now, `twilio_call_sid` NULL initially. Event recorded: `call_initiated`.
-2. **CallSid assigned** when Twilio's voice TwiML endpoint runs — `twilio_call_sid` set. Event recorded: `twilio_call_connected`.
-3. **Recording arrives** via webhook — `recording_url`, `duration_seconds`, `ended_at` populated. Event recorded: `twilio_recording_received`.
-4. **User completes form** post-call — `disposition`, `pain_points`, `notes` populated.
-5. **User clicks "Process Call"** — `recording_local_path`, `transcript`, `coaching_feedback`, `coaching_framework`, `processed_at` populated. Multiple events recorded along the way (see spec 07).
-
-A call row in any of these states is valid. The UI handles displaying partial data gracefully ("Recording not yet received" / "Not yet processed").
-
-## CSV import format for leads
-
-When the user imports leads via the leads page, the expected CSV format is:
-
-```csv
-business_name,contact_name,phone,website,address,neighborhood,industry,source,notes
-"Joe's HVAC","Joe Smith","+13125551234","https://joeshvac.com","123 Main St, Chicago IL 60622","Logan Square","HVAC","manual_search","Has online quote form already, may be tech-forward"
+CREATE INDEX idx_leads_status ON leads(status);
+CREATE INDEX idx_leads_phone ON leads(phone);
 ```
 
-- Header row is required.
-- `business_name` and `phone` are mandatory. Bad rows are rejected with an error message; the rest of the file imports successfully.
-- `phone` is normalized: strip non-digits, prepend `+1` if 10 digits, prepend `+` if 11 digits starting with `1`, otherwise reject. (See spec 03 for full rules.)
-- Duplicate phone numbers are skipped (with a count of skipped rows shown to the user).
-- `source` defaults to `csv_import` if blank.
-- `status` is set to `new` for all imported leads (cannot be specified in CSV).
+### Status enum (string column, validated in Laravel)
 
-## Migrations to write
+- `new` — never called
+- `called` — called but no decision yet
+- `interested` — wants follow-up
+- `discovery_booked` — discovery call scheduled
+- `disqualified` — won't pursue
+- `not_interested` — declined offer
+- `dead` — wrong number, out of business, never reaching
 
-Three migration files are needed:
+Status transitions are manual in Phase 1.
 
-1. `create_leads_table` — all columns above.
-2. `create_calls_table` — all columns above, with FK to leads.
-3. `create_events_table` — see spec 07 for schema.
+## calls table
 
-The Engineer should run `php artisan migrate` on a fresh SQLite database after creating these. Provide a `php artisan db:seed` command with a few test leads for development.
+```sql
+CREATE TABLE calls (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    -- Foreign key
+    lead_id INTEGER NOT NULL,
+
+    -- Twilio identifiers
+    twilio_call_sid VARCHAR(50),
+    twilio_recording_sid VARCHAR(50),  -- captured from recording webhook for deletion API
+
+    -- Recording
+    recording_url TEXT,                 -- Twilio's URL (with .mp3 appended)
+    recording_local_path VARCHAR(255),  -- path on OptiPlex after download
+
+    -- Transcript (cached for fast display; canonical version is in coaching/transcripts/{id}.md)
+    transcript TEXT,
+
+    -- Call metadata
+    duration_seconds INTEGER,
+    started_at TIMESTAMP,
+    ended_at TIMESTAMP,
+
+    -- Outcome
+    disposition VARCHAR(30),
+    pain_points TEXT,
+    notes TEXT,
+
+    -- Pipeline status
+    processed_at TIMESTAMP,             -- set when transcription completes
+
+    -- Timestamps
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (lead_id) REFERENCES leads(id)
+);
+
+CREATE INDEX idx_calls_lead_id ON calls(lead_id);
+CREATE INDEX idx_calls_twilio_call_sid ON calls(twilio_call_sid);
+CREATE INDEX idx_calls_disposition ON calls(disposition);
+CREATE INDEX idx_calls_started_at ON calls(started_at);
+```
+
+### Disposition enum (string column, validated in Laravel)
+
+Per spec 03 and spec 10:
+
+- `voicemail` — Voicemail left
+- `no_answer` — No answer / disconnected
+- `declined_recording` — Lead declined recording disclosure (recording auto-deleted)
+- `not_interested` — Not interested
+- `interested` — Interested, follow up
+- `discovery_booked` — Discovery call booked
+- `disqualified` — Disqualified
+- `wrong_number` — Wrong number
+- `bad_number` — Bad number / dead line
+
+### Notes on the calls schema
+
+**No `coaching_feedback` or `coaching_framework` columns.** Coaching feedback lives in the filesystem at `storage/app/coaching/feedback/{call_id}.md`, written by Claude Desktop via filesystem MCP (spec 09). The dashboard reads these files at display time. The schema does not duplicate this content.
+
+This was a late architectural change. An earlier draft of this schema had `coaching_feedback TEXT` and `coaching_framework VARCHAR(50)` columns intended for storing API-generated coaching. Those columns were removed when the architecture pivoted to Claude Desktop.
+
+**`twilio_recording_sid` exists for deletion.** When a lead declines recording (`disposition === 'declined_recording'`), spec 03's CallController calls Twilio's DELETE endpoint to remove the recording from their servers. That call requires the recording SID, captured from the webhook. See spec 04's webhook handler.
+
+**`transcript` is cached.** The canonical transcript is the markdown file in `storage/app/coaching/transcripts/{call_id}.md` (with frontmatter, used by Claude Desktop). The DB column is a fast-read cache for the call detail page.
+
+## events table
+
+For traceback debugging. Append-only audit log of significant pipeline events. See spec 07 for full details.
+
+```sql
+CREATE TABLE events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_type VARCHAR(50) NOT NULL,
+    subject_type VARCHAR(20) NOT NULL,    -- 'call', 'lead', 'system'
+    subject_id INTEGER,                    -- nullable for system events
+    payload TEXT,                          -- JSON
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_events_subject ON events(subject_type, subject_id);
+CREATE INDEX idx_events_event_type ON events(event_type);
+CREATE INDEX idx_events_created_at ON events(created_at);
+```
+
+Event types used in Phase 1 (per spec 07 and spec 10):
+
+- `call_initiated` — user clicked Call
+- `twilio_call_connected` — Twilio's voice endpoint fired and we associated CallSid
+- `twilio_recording_received` — recording webhook fired
+- `recording_downloaded` — local file saved
+- `transcript_generated` — Whisper completed
+- `call_processed` — full pipeline succeeded
+- `consent_declined` — lead declined recording disclosure (per spec 10)
+- `recording_deleted` — recording removed from local disk and Twilio (per spec 10)
+- `error` — any pipeline failure
+
+## Migrations
+
+Laravel migrations should be one-per-table:
+
+```
+database/migrations/
+├── 2026_05_01_000001_create_leads_table.php
+├── 2026_05_01_000002_create_calls_table.php
+└── 2026_05_01_000003_create_events_table.php
+```
+
+The Engineer should not add `coaching_feedback` or `coaching_framework` columns to the calls migration. Those are intentionally absent — coaching is filesystem-based.
 
 ## Eloquent models
 
-### `App\Models\Lead`
-- `$fillable`: all non-id, non-timestamp columns
-- `$casts`: none needed initially
-- Relationship: `calls()` — hasMany `Call`
+`app/Models/Lead.php`:
 
-### `App\Models\Call`
-- `$fillable`: all non-id, non-timestamp columns
-- `$casts`: `started_at`, `ended_at`, `processed_at` to `datetime`
-- Relationship: `lead()` — belongsTo `Lead`
-- Helper methods:
-  - `hasRecording()`: returns true if `recording_url` is not null
-  - `isProcessed()`: returns true if `processed_at` is not null
-  - `framework()`: returns `coaching_framework` or fallback to default
+```php
+<?php
 
-### `App\Models\Event`
-See spec 07.
+namespace App\Models;
 
-## What's deferred to Phase 2
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-- A `companies` and `contacts` split (Twenty's data model when migrated)
-- A `frameworks` table or seed data — for Phase 1, framework is just a string column
-- Hash-chain columns on `events` (`prev_hash`, `content_hash`) — adding these later doesn't require migrating the existing rows; they just won't have hashes
-- A `costs` denormalized table for tracking Twilio + Claude API spend per call (the events table already has this data; a denormalized table is just for query speed)
-- Tags, custom fields, anything resembling Twenty's metadata model
+class Lead extends Model
+{
+    protected $fillable = [
+        'business_name', 'contact_name', 'phone', 'email', 'website',
+        'industry', 'neighborhood', 'address', 'brief', 'source', 'status',
+    ];
 
-These are intentionally not built. The current schema is forward-compatible: when Twenty arrives, `leads` becomes a sync target, not a replacement; coaching data stays here; events stay here.
+    protected $casts = [
+        'last_call_date' => 'datetime',
+    ];
+
+    public function calls(): HasMany
+    {
+        return $this->hasMany(Call::class);
+    }
+}
+```
+
+`app/Models/Call.php`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Call extends Model
+{
+    protected $fillable = [
+        'lead_id',
+        'twilio_call_sid', 'twilio_recording_sid',
+        'recording_url', 'recording_local_path',
+        'transcript', 'duration_seconds',
+        'started_at', 'ended_at',
+        'disposition', 'pain_points', 'notes',
+        'processed_at',
+    ];
+
+    protected $casts = [
+        'started_at' => 'datetime',
+        'ended_at' => 'datetime',
+        'processed_at' => 'datetime',
+    ];
+
+    public function lead(): BelongsTo
+    {
+        return $this->belongsTo(Lead::class);
+    }
+}
+```
+
+`app/Models/Event.php`:
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Event extends Model
+{
+    protected $fillable = ['event_type', 'subject_type', 'subject_id', 'payload'];
+
+    protected $casts = [
+        'payload' => 'array',
+    ];
+
+    public $timestamps = false;  // only created_at
+
+    protected $dates = ['created_at'];
+}
+```
+
+## Out of scope for Phase 1
+
+- Foreign-key enforcement on `events.subject_id` (intentional — events table is loose audit log)
+- Soft deletes on leads or calls (would conflict with the auto-delete-on-decline behavior for declined_recording)
+- Lead deduplication beyond unique phone constraint
+- Multi-tenant scoping
+- Encryption at rest
+- Connection to Twenty CRM (Phase 2 — will require lead schema additions or sync mechanism)
