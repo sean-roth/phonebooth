@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
+use App\Services\EventLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -32,7 +33,7 @@ class LeadController extends Controller
         return view('leads.index', compact('leads'));
     }
 
-    public function import(Request $request)
+    public function import(Request $request, EventLogger $events)
     {
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt',
@@ -105,6 +106,10 @@ class LeadController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             fclose($handle);
+            $events->record('error', 'lead', null, [
+                'step' => 'csv_import',
+                'message' => $e->getMessage(),
+            ]);
             return back()->with('error', 'Import failed: ' . $e->getMessage());
         }
 

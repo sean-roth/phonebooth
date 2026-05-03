@@ -51,6 +51,9 @@ device.onStatusChange = (status, payload) => {
 };
 
 callBtn.addEventListener('click', async () => {
+    // Disable immediately to prevent double-click creating duplicate call records
+    callBtn.disabled = true;
+
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
     const response = await fetch('/calls', {
@@ -65,6 +68,7 @@ callBtn.addEventListener('click', async () => {
     if (!response.ok) {
         alert('Failed to create call record. Check console.');
         console.error('Call store failed:', await response.text());
+        callBtn.disabled = false;
         return;
     }
 

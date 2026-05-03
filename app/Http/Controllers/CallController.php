@@ -14,7 +14,10 @@ class CallController extends Controller
     {
         $lead->load(['calls' => fn($q) => $q->orderByDesc('created_at')->limit(3)]);
 
-        return view('calls.create', compact('lead'));
+        // If redirected back from a failed validation, the pending call still exists
+        $pendingCall = $lead->calls()->whereNull('disposition')->latest()->first();
+
+        return view('calls.create', compact('lead', 'pendingCall'));
     }
 
     public function store(Request $request, EventLogger $events)
@@ -57,7 +60,26 @@ class CallController extends Controller
 
         $call->update($validated + ['ended_at' => now()]);
 
-        $call->lead->update(['last_call_date' => now()]);
+        // Update lead: last_call_date always, status based on disposition
+        $leadUpdate = ['last_call_date' => now()];
+
+        $dispositionToStatus = [
+            'not_interested' => 'not_interested',
+            'interested' => 'interested',
+            'discovery_booked' => 'discovery_booked',
+            'disqualified' => 'disqualified',
+            'wrong_number' => 'dead',
+            'bad_number' => 'dead',
+        ];
+
+        if (isset($dispositionToStatus[$validated['disposition']])) {
+            $leadUpdate['status'] = $dispositionToStatus[$validated['disposition']];
+        } elseif (in_array($validated['disposition'], ['voicemail', 'no_answer'])) {
+            // Keep current status — lead stays in queue for retry
+            $leadUpdate['status'] = 'called';
+        }
+
+        $call->lead->update($leadUpdate);
 
         $events->record('call_completed', 'call', $call->id, [
             'disposition' => $call->disposition,
