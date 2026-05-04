@@ -68,9 +68,21 @@
                         {{ $lead->last_call_date?->format('M j, g:ia') ?? '—' }}
                     </td>
                     <td class="px-4 py-3 text-right">
-                        <a href="{{ route('calls.create', $lead) }}" class="text-sm font-medium text-blue-600 hover:text-blue-800">
-                            Call
-                        </a>
+                        <div class="flex items-center justify-end gap-3">
+                            <a href="{{ route('calls.create', $lead) }}" class="text-sm font-medium text-blue-600 hover:text-blue-800">
+                                Call
+                            </a>
+                            <form action="{{ route('leads.destroy', $lead) }}" method="POST" class="inline"
+                                  onsubmit="return confirm('Delete {{ addslashes($lead->business_name) }}?@if($lead->calls_count > 0) This will also delete {{ $lead->calls_count }} call record{{ $lead->calls_count === 1 ? '' : 's' }}.@endif');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-gray-400 hover:text-red-600" title="Delete lead">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @endforeach

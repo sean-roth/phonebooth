@@ -15,6 +15,7 @@ Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
 Route::post('/leads/import', [LeadController::class, 'import'])->name('leads.import');
 Route::get('/leads/{lead}', [LeadController::class, 'show'])->name('leads.show');
 Route::patch('/leads/{lead}', [LeadController::class, 'update'])->name('leads.update');
+Route::delete('/leads/{lead}', [LeadController::class, 'destroy'])->name('leads.destroy');
 
 // Calls
 Route::get('/leads/{lead}/call', [CallController::class, 'create'])->name('calls.create');

@@ -17,7 +17,7 @@ class LeadController extends Controller
             $query->where('status', $status);
         }
 
-        $leads = $query->orderByRaw("CASE status
+        $leads = $query->withCount('calls')->orderByRaw("CASE status
             WHEN 'new' THEN 1
             WHEN 'interested' THEN 2
             WHEN 'discovery_booked' THEN 3
@@ -170,6 +170,15 @@ class LeadController extends Controller
         $lead->update(array_filter($validated, fn($v) => $v !== null));
 
         return back()->with('success', 'Lead updated.');
+    }
+
+    public function destroy(Lead $lead)
+    {
+        $name = $lead->business_name;
+        $lead->delete();
+
+        return redirect()->route('leads.index')
+            ->with('success', "Deleted {$name}.");
     }
 
     private function normalizePhone(string $phone): ?string
