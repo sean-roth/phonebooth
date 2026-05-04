@@ -119,6 +119,40 @@ class LeadController extends Controller
             ->with('success', "Imported {$imported}, skipped {$skipped} duplicates, rejected {$rejected} invalid.");
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'business_name' => 'required|string|max:255',
+            'contact_name' => 'nullable|string|max:255',
+            'phone' => 'required|string',
+            'email' => 'nullable|email|max:255',
+            'website' => 'nullable|string|max:255',
+            'industry' => 'nullable|string|max:100',
+            'neighborhood' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:255',
+            'brief' => 'nullable|string',
+        ]);
+
+        $phone = $this->normalizePhone($validated['phone']);
+        if (!$phone) {
+            return back()->withInput()->withErrors([
+                'phone' => 'Invalid phone number. Use 10 digits or +1 + 10 digits.',
+            ]);
+        }
+
+        if (Lead::where('phone', $phone)->exists()) {
+            return back()->withInput()->withErrors([
+                'phone' => 'A lead with this phone number already exists.',
+            ]);
+        }
+
+        $validated['phone'] = $phone;
+        $validated['source'] = 'manual';
+        $lead = Lead::create($validated);
+
+        return redirect()->route('leads.show', $lead)->with('success', 'Lead added.');
+    }
+
     public function show(Lead $lead)
     {
         $lead->load(['calls' => fn($q) => $q->orderByDesc('created_at')]);

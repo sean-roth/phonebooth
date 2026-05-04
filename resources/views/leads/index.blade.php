@@ -5,9 +5,14 @@
 @section('content')
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-gray-900">Leads</h1>
-    <button onclick="document.getElementById('import-modal').showModal()" class="bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
-        Import CSV
-    </button>
+    <div class="flex gap-2">
+        <button onclick="document.getElementById('add-lead-modal').showModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+            Add Lead
+        </button>
+        <button onclick="document.getElementById('import-modal').showModal()" class="bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
+            Import CSV
+        </button>
+    </div>
 </div>
 
 {{-- Status filter --}}
@@ -75,4 +80,5 @@
 @endif
 
 @include('leads.partials.import-modal')
+@include('leads.partials.add-lead-modal')
 @endsection

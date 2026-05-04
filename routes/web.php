@@ -11,6 +11,7 @@ Route::get('/', fn() => redirect('/leads'));
 
 // Leads
 Route::get('/leads', [LeadController::class, 'index'])->name('leads.index');
+Route::post('/leads', [LeadController::class, 'store'])->name('leads.store');
 Route::post('/leads/import', [LeadController::class, 'import'])->name('leads.import');
 Route::get('/leads/{lead}', [LeadController::class, 'show'])->name('leads.show');
 Route::patch('/leads/{lead}', [LeadController::class, 'update'])->name('leads.update');
