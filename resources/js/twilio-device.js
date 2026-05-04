@@ -1,4 +1,4 @@
-import { Device } from '@twilio/voice-sdk';
+import { Device, Call } from '@twilio/voice-sdk';
 
 export class PhoneboothDevice {
     constructor() {
@@ -18,7 +18,7 @@ export class PhoneboothDevice {
 
         this.device = new Device(data.token, {
             logLevel: 1,
-            codecPreferences: [Device.Codec.Opus, Device.Codec.PCMU],
+            codecPreferences: [Call.Codec.Opus, Call.Codec.PCMU],
         });
 
         this.device.on('registered', () => this.notify('idle'));
