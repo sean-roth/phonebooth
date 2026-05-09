@@ -2,6 +2,8 @@
 
 A running log of architectural and product decisions made during Phase 2 brainstorming. Includes both accepted directions and **explicitly rejected** ones, with reasoning, so we don't relitigate.
 
+For open items still in flight, see `workstreams.md`.
+
 ---
 
 ## Accepted
@@ -30,11 +32,17 @@ A running log of architectural and product decisions made during Phase 2 brainst
 
 **Why:** At ~5–10% B2B connect rates, 3 lines yields ~2.5x conversation rate vs single-line with sub-1% abandoned-call rate. 7 lines is spam-flag and reputation risk for a brand-new outbound motion. Once numbers are flagged "Spam Likely," pickup rate collapses and DIDs have to be replaced at $10–15 each.
 
+### Multi-number rotation pool
+
+**Decision:** Provision 3 Chicago metro numbers (e.g. 312, 773, 708) and rotate outbound calls across them. Each call records which number was used. Round-robin selection from the warm pool.
+
+**Why:** A single number doing 100+ dials/day will trigger carrier spam flagging within 1–2 weeks. Spreading across 3 numbers reduces per-number daily dial count to 30–50, which is well within safe territory. Local presence (Chicago area codes calling Cook County contractors) materially improves pickup rate vs out-of-area numbers. Cost is negligible: $1.15/mo × 3 = $3.45/mo. The phonebooth Call model already has space to track which number was used per call — leverage that for later spam-flagging diagnostics. Number-replacement strategy (retiring flagged numbers) is part of T2.4.
+
 ### Pre-call AI brief replaces whisper coach
 
 **Decision:** A 60-second Claude-generated brief renders in the cockpit when a lead loads. No real-time AI listening during the call.
 
-**Why:** Illinois Eavesdropping Act (two-party consent) makes real-time STT a legal exposure even with non-persistent buffers. Pre-call briefs achieve most of the same prep value without recording anything. Sean reads the brief in 30 seconds before dialing.
+**Why:** Pre-call briefs achieve most of the same prep value as live whisper coaching without the recording exposure (see whisper-coach rejection below for the legal reasoning). Sean reads the brief in 30 seconds before dialing.
 
 ### Stats dashboard: three views, no XP
 
@@ -68,7 +76,7 @@ A running log of architectural and product decisions made during Phase 2 brainst
 
 **Considered:** Deepgram + Claude streaming during calls, Nooks/Orum-style live coaching that listens to the rep and surfaces objection responses in real time.
 
-**Rejected because:** Illinois two-party consent. Real-time STT counts as "recording" under the Eavesdropping Act regardless of persistence. Pre-call briefing achieves most of the prep value legally.
+**Rejected because:** Illinois Eavesdropping Act creates real risk that real-time STT counts as "recording" even with non-persistent buffers. The legal question is not definitively settled — earlier framing in this conversation overstated the certainty. Conservative path is appropriate at runway-pressure stage: pre-call briefing achieves most of the prep value without the legal exposure. Worth revisiting if a compliance-friendly real-time architecture emerges (e.g. on-device STT with no cloud transit, or two-party consent obtained through callback IVR before live coaching activates). Tracked as S3 in `workstreams.md` for future investigation.
 
 ### Premium parallel dialers (Nooks, Orum, Kixie)
 
@@ -91,17 +99,3 @@ A running log of architectural and product decisions made during Phase 2 brainst
 ### Multi-user auth, email sending automation, web admin UI for templates
 
 **Rejected (for now) because:** Solo operator. Each of these earns its place at 5+ clients or a team, not before. Drafts get written by Claude, copied into Gmail, sent manually. Templates live as markdown files in the repo, edited directly.
-
----
-
-## Open Questions
-
-These aren't decisions yet. Each needs a small spike or a dedicated brainstorm before specifying.
-
-1. **Twenty's API rate limits at our call volume.** Ceiling on writes per minute? Does it accommodate 100+ enrichment writes in a batch?
-2. **Twenty's data model fit for enrichment fields.** Custom fields? JSON columns? Or do we adapt our schema to theirs?
-3. **Auth between phonebooth and Twenty.** API key, OAuth, or something else? Where does the secret live?
-4. **Twilio Voice JS SDK + Conference + AMD behavior.** Audio routing, kill-others timing, edge cases. Worth a spike before specing parallel dialing.
-5. **Voicemail drop architecture.** High VM rate expected for this ICP. Script length, voice (Sean's recording vs AI-generated vs Twilio Polly), legal posture (still a "call" under FCC; rules apply).
-6. **Federal DNC API integration.** Free tier, rate limits, scrub frequency.
-7. **Where leads vs contacts vs companies vs opportunities live in Twenty.** A landscaping business is a company; the owner is a contact; the cold-call is an activity; a discovery booked is an opportunity. Need to confirm Twenty's standard objects fit this model before specing the schema.
