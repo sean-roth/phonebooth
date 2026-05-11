@@ -1,91 +1,81 @@
 # Pre-Call Checklist
 
-The 5-minute routine to actually dial. Use this for the first two weeks until the muscle is built.
+The routine to actually dial. Use this for the first two weeks until the muscle is built.
 
-## The night before (20-minute timer)
+**Time zone:** All times in Mountain Time (Sean's location). Add 1 hour for Central Time (Chicago target market).
 
-Set a timer. Pick two leads. Stop. The timer is the discipline — without it, prep expands to fill the evening and tomorrow morning gets eaten.
+## The night before
 
-- [ ] Lead 1: a closed restaurant or low-stakes warm-up target. Bad-website, will probably go to voicemail. This is the seal-breaker.
-- [ ] Lead 2: a trades shop with the worst website you can find. Bad website = low stakes. The "good lead" goes in next week's queue, not tomorrow's.
-- [ ] Both loaded into the phonebooth dashboard with name, number, one-line note.
-- [ ] Sticky note on the screen with ONE sentence: *"Hi, is this [name]? My name's Sean from SOPs Nobody Reads, calling from Chicago."*
-- [ ] Close the laptop. Don't research more. Two leads is the ceiling, not the floor.
+Set a 20-minute timer. Pick leads. Stop.
 
-## Morning of — the 8:30 AM block
+- [ ] 10–15 leads loaded in phonebooth dashboard
+- [ ] Lead 1 marked as the warm-up target (lowest stakes — broken website, sparse reviews)
+- [ ] Sticky note on screen with the opener:
+      *"Good morning, this is Sean with SOPs Nobody Reads, training that gets done, can I borrow 30 seconds of your time?"*
+- [ ] Close the laptop. Don't research more.
 
-The window is 8:30–9:30 AM CT. Trade owners are at the desk doing paperwork between 7:45 and 9:30, before they head to sites. Restaurants are dead until 10. The window is engineered.
+## Morning of — the 6:00 AM MT block
 
-### 8:30 — Start the 15-minute timer immediately
+### 5:30–6:00 AM MT — Pre-call
 
-Don't wait until you feel ready. The timer's job is to interrupt the rumination loop. The second you sit down, start it.
+- [ ] Wake, water, coffee, food
+- [ ] 30-minute walk outside. Nervous-system regulation. Not optional.
+- [ ] Return, open script tab, glance only
+- [ ] Stand up. Voice changes when standing.
 
-- [ ] Stand up. Sitting changes your voice.
-- [ ] Drink a full glass of water.
-- [ ] Three slow breaths.
-- [ ] Open the script in another tab. Glance, don't read.
-- [ ] Open the sticky note. The first sentence is the only sentence that has to land.
+### 6:00 AM MT — Start dialing immediately
 
-### 8:30–8:35 — Warm-up call
+Don't wait for ready. Ready doesn't come; momentum does.
 
-The closed restaurant or any warm-up target. Even if it goes to voicemail, leave a message using the opener. The seal-break is the rep — voice in the throat, words in real air. It doesn't need to be a real prospect.
+- [ ] Dial the warm-up lead first
+- [ ] Run the opener. Whatever they say (or don't), log it.
+- [ ] Move to next dial within 30 seconds of hanging up
 
-- [ ] Dial.
-- [ ] Run the opener whether a person answers or it goes to voicemail.
-- [ ] Hang up.
-- [ ] Log the call in phonebooth.
+### 6:00–7:30 AM MT — Dial block
 
-### 8:35–8:40 — Reset, 60 seconds
+- [ ] Aim for 1–3 human conversations (the actual metric)
+- [ ] 15–20 dials
+- [ ] Log every call as you go
+- [ ] 60-second stretch every 5 dials
+- [ ] Fast hangups are wins
 
-- [ ] Stand up, walk to the kitchen, drink water.
-- [ ] Don't read the script again. Don't analyze the warm-up. Just walk.
+### 7:30–8:00 AM MT — Stop and reset
 
-### 8:40 — Trades call (timer-triggered, not feel-triggered)
+- [ ] Close dashboard
+- [ ] Walk outside, 15 minutes, no phone
+- [ ] Don't review recordings yet — afternoon
 
-If the 15-minute timer is still running, the moment it hits 8:40 is the moment you dial. Not "when ready." If you're mid-thought, dial mid-thought.
+## The fast qualification mindset
 
-- [ ] Dial.
-- [ ] Run the script.
-- [ ] Branch on response (see cold-call-script.md).
-- [ ] Log the call.
+A hangup at 14 seconds is a successful call. The opener reached a decision moment, the prospect decided no, you got fast information. This is the system working.
 
-### 8:45 onward — Stop
+A polite 2-minute conversation that ends in "send info" is worse than a hangup. It wastes time, gives a fake email, and pretends to be a yes when it's a no.
 
-Two calls is the **ceiling**, not the floor. Knowing the ceiling lets your nervous system commit to starting.
+Optimize for fast nos. Polite slow nos are the failure mode, not hangups.
 
-- [ ] Close the dashboard.
-- [ ] Walk outside, 15 minutes. No phone.
-- [ ] Don't review the recordings yet — afternoon, not now.
+## Recording review (3:00–3:30 PM MT)
 
-## Recording review (4:00–4:30 PM CT)
-
-- [ ] Listen to both calls.
-- [ ] One observation per call. Not a list. One thing.
-- [ ] Note one thing to adjust for tomorrow.
-- [ ] Don't rewrite the script. Change one sentence at most.
+- [ ] Listen to 3 calls: best, worst, random
+- [ ] One observation per call
+- [ ] Note one thing to adjust tomorrow
+- [ ] Don't rewrite the script wholesale
 
 ## What success looks like for week one
 
-- **Day 1:** One call. Any kind. Voicemail counts.
-- **Day 2:** Two calls. Both can be voicemails.
-- **Day 3:** Two calls, at least one with a human.
-- **Day 4:** Three calls.
-- **Day 5:** Four calls.
+- **Day 1:** One human conversation (any duration). Voicemail-only days don't count.
+- **Day 2:** Two human conversations or one + several voicemails.
+- **Day 3+:** Two conversations per day, climbing toward three.
 
-By Friday you'll have made 12 calls. That's enough to know your voice, hear yourself on tape, and tell the difference between Monday's voice and Friday's. Tighten the script over the weekend. Week 2 starts at 10/day, ramps to 20/day by week 3.
+By Friday: 5–10 human conversations across the week. Tighten the script over the weekend. Week 2 raises the bar.
 
 ## What to do when you don't dial
 
-If you sit at 8:30 and the hand doesn't move:
+If you sit at 6:00 AM and the hand doesn't move:
 
-- [ ] Lower the bar. Call your own Twilio number. Leave yourself a voicemail with the opener. That counts as a call.
-- [ ] If the hand still doesn't move, write down what you're afraid of in one sentence. Just one. Then dial Twilio.
-- [ ] Stop after that. Don't punish yourself with a second attempt. Tomorrow's number is "more than today" — and one Twilio voicemail counts as today.
-
-## Why the scaffolding is okay
-
-Phonebooth, the timer, the sticky note, the pre-loaded leads, the two-call ceiling — this is **scaffolding, not crutches**. Crutches stay forever. Scaffolding comes down once the building stands. In three months most of this list will be gone because you won't need it. The fact that you built it instead of white-knuckling it means you'll actually start, which is what matters.
+- [ ] Lower the bar. Call your own Twilio number. Leave yourself the opener as a voicemail.
+- [ ] If the hand still won't move, write down what you're afraid of in one sentence. Then dial Twilio.
+- [ ] Stop after that. Don't punish with a second attempt. Tomorrow's number is "more than today."
 
 ## When to update this doc
 
-After two full weeks of dialing. Not before. The first version of any process is wrong; the right version emerges from the reps.
+After two full weeks of dialing. The first version of any process is wrong; the right version emerges from reps.
