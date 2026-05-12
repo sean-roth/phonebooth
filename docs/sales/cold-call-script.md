@@ -43,7 +43,7 @@ Don't burn the opener on them. Pivot:
 Three branches from here:
 
 - *"He's on a job"* / *"He's not in right now"* — "What's the best time to catch him?" Get a time. Call back at that time. Don't leave a message yet.
-- *"Can I take a message?"* — "Sure. Sean from SOPs Nobody Reads, 312-XXX-XXXX. I'll try back later — just wanted to introduce myself." Short. Don't pitch the gatekeeper.
+- *"Can I take a message?"* — "Sure. Sean from SOPs Nobody Reads. I'll try back later — just wanted to introduce myself." Short. Don't pitch the gatekeeper. Don't leave the number — they can't call back anyway (see Voicemail section).
 - *"What's this regarding?"* — "Training. I work with small contractors on the OSHA side — building training from their own SOPs. Just two minutes with him would tell me if it's relevant." Concrete enough to be credible, vague enough that he decides, not her.
 
 The gatekeeper is not the enemy. She's protecting his time. Respect that, don't try to bypass her, and she'll often hand him the phone.
@@ -54,9 +54,9 @@ The gatekeeper is not the enemy. She's protecting his time. Respect that, don't 
 
 ### They say "not interested" / "we're set"
 
-> "Fair enough. Can I send our 10-minute LOTO demo so you've seen what we do? If training ever bites you, you'll know who to call. No follow-up otherwise."
+> "Fair enough. The site has a 10-minute LOTO demo — sopsnobodyreads.com. If training ever bites you, you'll know who we are."
 
-Get email, end call. They go in the future-pipeline list.
+End call. They go in the future-pipeline list.
 
 ---
 
@@ -76,11 +76,11 @@ If either trigger is real:
 
 > "Got it. Honest question — if a GC asked you tomorrow to walk through how your crew gets trained on LOTO, would the records hold up?"
 
-If they hesitate, that's the opening. If confident, send the demo and move on.
+If they hesitate, that's the opening. If confident, point them to the demo and move on.
 
 ### "We have an LMS already"
 
-> "Fair enough. Mind if I send our 10-minute LOTO demo so you've seen it? Built from the contractor's own SOPs, with a record that holds up if OSHA or insurance asks. No follow-up unless you reach out."
+> "Fair enough. The site has a 10-minute LOTO demo built from a real contractor's SOPs — sopsnobodyreads.com. Different approach than what you've probably seen. No follow-up unless you reach out."
 
 ---
 
@@ -88,9 +88,9 @@ If they hesitate, that's the opening. If confident, send the demo and move on.
 
 ### "Just send me info"
 
-> "Happy to. What's the best email? I'll send our 10-minute LOTO demo. Cool if I grab 15 minutes on your calendar after you've had a chance to click through?"
+> "The fastest way is the demo on the site — sopsnobodyreads.com, takes 10 minutes to click through. Want to grab 15 minutes on my calendar after you've had a chance?"
 
-Send it AND book it.
+Point to the site, then ask for the calendar slot. The site does the info-send better than an email would.
 
 ### "How much does it cost?"
 
@@ -98,17 +98,25 @@ Send it AND book it.
 
 ### "We're not interested"
 
-> "Fair enough. Can I send the demo anyway? 10-minute click-through. If training ever bites you, you'll know who we are. No follow-up otherwise."
+> "Fair enough. The site has a 10-minute LOTO demo — sopsnobodyreads.com. If training ever bites you, you'll know who we are."
 
 ---
 
 ## Voicemail
 
-Under 20 seconds. The 312 number does the work — don't say "calling from Chicago."
+**The 312 number is outbound-only.** Inbound callbacks don't route anywhere. Voicemail messages must point to the website as the response surface, not the phone number.
 
-> "Hi, this is Sean from SOPs Nobody Reads. I work with small contractors on safety training built from your own SOPs — the kind that holds up for OSHA and GC prequal docs. Wanted to see if that's something you're running into. My number is [number] — happy to send a 10-minute demo either way. Thanks."
+Target: 12–15 seconds.
+
+> "Hi, this is Sean from SOPs Nobody Reads. We build OSHA training from your own SOPs — for GC prequal and insurance documentation. Take a look at sopsnobodyreads.com when you have a minute — there's a 10-minute LOTO demo on there that shows exactly what we do. Thanks."
 
 One voicemail per prospect per month maximum.
+
+**Delivery note:** *sopsnobodyreads.com* runs together if said fast. Slow down for the URL specifically. Say "SOPs Nobody Reads dot com" with a deliberate cadence, or repeat it: *"That's sopsnobodyreads.com."* The brand name is a sentence — readers parse it fine on a postcard but listeners need a beat.
+
+### When to upgrade
+
+When inbound volume becomes a real loss (probably week 3–4), configure the Twilio number to forward to Sean's cell. Then voicemail can include a callback number as an option alongside the site.
 
 ---
 
