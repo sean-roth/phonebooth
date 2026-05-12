@@ -32,6 +32,22 @@ Now run the rest. Confirm the name, then specifics:
 
 Then listen.
 
+### They sound like a gatekeeper (quiet office, not the decision-maker, casual answer)
+
+Signals: woman in a quiet room when you expected a contractor on a site, someone who sounds like "office" not "shop," anyone who immediately defers to "the owner" or "my husband."
+
+Don't burn the opener on them. Pivot:
+
+> "Oh — is the owner around? Could I grab two minutes with him?"
+
+Three branches from here:
+
+- *"He's on a job"* / *"He's not in right now"* — "What's the best time to catch him?" Get a time. Call back at that time. Don't leave a message yet.
+- *"Can I take a message?"* — "Sure. Sean from SOPs Nobody Reads, 312-XXX-XXXX. I'll try back later — just wanted to introduce myself." Short. Don't pitch the gatekeeper.
+- *"What's this regarding?"* — "Training. I work with small contractors on the OSHA side — building training from their own SOPs. Just two minutes with him would tell me if it's relevant." Concrete enough to be credible, vague enough that he decides, not her.
+
+The gatekeeper is not the enemy. She's protecting his time. Respect that, don't try to bypass her, and she'll often hand him the phone.
+
 ### They ask what it is
 
 > "I take the SOPs you already have and turn them into training your crews run on a phone or tablet, with a verifiable record. About a week per topic. Worth 30 more seconds?"

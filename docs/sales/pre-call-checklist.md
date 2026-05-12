@@ -53,6 +53,14 @@ A polite 2-minute conversation that ends in "send info" is worse than a hangup. 
 
 Optimize for fast nos. Polite slow nos are the failure mode, not hangups.
 
+## On near-bails
+
+If you almost don't dial today and then dial anyway, **that is the win.** The muscle being trained is not "making a great call." The muscle being trained is *pressing the button when your nervous system says don't.*
+
+A day with two dials where one was an almost-bail-turned-press is more valuable than a day with ten dials where the button-press never required override. The first kind builds the capacity that makes the second kind possible.
+
+Log almost-bails-that-became-dials as their own metric. They are the actual training data of week one.
+
 ## Recording review (3:00–3:30 PM MT)
 
 - [ ] Listen to 3 calls: best, worst, random

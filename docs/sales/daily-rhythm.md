@@ -43,23 +43,27 @@ Second contractor window. Owner back at desk doing quotes between morning and af
 
 Third contractor window. Crews wrapping or at the shop. Slightly lower pickup than morning but real conversations happen here.
 
-## Afternoon
+## On the window assumption
 
-- Discovery calls scheduled here, not in morning blocks
-- Phonebooth tool work, module production for active clients, follow-up emails
-- 3:00 PM MT — listen to morning recordings, one observation per call
+The 6:00–7:30 AM MT window is the working hypothesis: owner-operators at the desk, before crews roll, before the casual office gatekeeper (wife, daughter, part-time receptionist) starts answering.
 
-## Why early MT matters
+This is a hypothesis, not a fact. As of mid-May 2026, n=7 calls. A May 12 call hit a probable gatekeeper (quiet office, woman picked up) inside this window, which complicates the assumption — maybe the gatekeeper is there even at 7 AM CT, or maybe she was the exception.
 
-The 6:00–7:30 AM MT window is non-negotiable for the first month because it's the window where trade owners are at the desk. Owner-operators do paperwork between 7:00–9:00 AM CT, then disappear onto job sites. Missing this window means catching voicemails and gatekeepers for the rest of the day.
+**Rule: don't update the window assumption until at least 50 calls of data across at least two different windows.** One data point doesn't override structural logic; 50 data points might. Track which windows produce which outcomes (owner pickup, gatekeeper pickup, voicemail, dead line) so the data can be compared cleanly later.
 
-This means waking up at 5:30 AM MT. It's early. It's also the difference between calling humans and calling voicemail boxes. The afternoon options exist as backups, not replacements.
+If gatekeeper pickup rate is high even in the early window, the response isn't to abandon the window — it's to sharpen the gatekeeper-pivot move (see `docs/sales/cold-call-script.md`).
+
+## Why early MT matters (provisional)
+
+The 6:00–7:30 AM MT window is non-negotiable for the first month because it's the window where trade owners are *most likely* at the desk. Owner-operators do paperwork between 7:00–9:00 AM CT, then disappear onto job sites. Missing this window means catching voicemails and gatekeepers for the rest of the day — probably.
+
+This means waking up at 5:30 AM MT. It's early. It's also the difference between calling humans and calling voicemail boxes — again, probably. Confirm with data.
 
 ## The metric
 
 **Human conversations per day**, not dials. One human conversation = a successful day. Two is a great day. Three is unusual.
 
-Voicemails and gatekeepers are the cost of getting to conversations, not failures.
+Voicemails, dead lines, and gatekeepers are the cost of getting to conversations, not failures.
 
 ## The week
 
@@ -73,7 +77,7 @@ No dialing weekends. Trade owners don't pick up.
 
 ## Week-by-week ramp
 
-- **Week 1:** Goal is 1 human conversation per day. Dial count secondary.
+- **Week 1:** Goal is 1 human conversation per day. Dial count secondary. Almost-bails-that-become-dials count as wins.
 - **Week 2:** 2 conversations per day. ~15 dials.
 - **Week 3:** 3 conversations per day. ~20 dials.
 - **Week 4:** Steady state. First close possible.
