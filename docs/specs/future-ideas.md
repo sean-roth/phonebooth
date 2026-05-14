@@ -26,6 +26,8 @@ These surfaced during the first week of manual cold calling. Capture them now; b
 
 - **Gatekeeper-vs-owner pickup field.** Current call logging doesn't distinguish "owner picked up" from "gatekeeper picked up" from "voicemail" from "dead line." All four are different outcomes with different next-steps. Need a quick-tag field in the call log so this data can be analyzed across time windows (does early MT actually mean owner pickup, or just earlier gatekeeper?). (Captured 2026-05-12.)
 
+- **Minimum viable inbound layer (WEEKEND PROJECT).** Phone is the main channel for this audience. Trade owners call back, text back, leave voicemails. Currently the 312 number is outbound-only and any inbound is lost. Scope: (1) inbound call logging — caller ID + timestamp + voicemail captured to phonebooth dashboard, (2) inbound SMS capture — texts received to the 312 number show up in phonebooth, (3) email notification when any inbound arrives. NOT in scope this weekend: real-time call forwarding to cell, unified messaging inbox UI, auto-reply on inbound SMS, transcription. Twilio webhooks + database writes. ~6–10 hours focused work. (Captured 2026-05-14 after Victor's dropped call exposed the gap.)
+
 ## Sales workflow ideas
 
 - **Post-call demo-send automation.** After a call ends in "send me info" or "not interested but interested in demo," one-button action sends the LOTO demo email with their name pre-filled, logs the send in phonebooth, and queues a follow-up reminder. Currently doing this manually; will become a chore by call 50. (Captured 2026-05-12.)
@@ -43,3 +45,5 @@ None of these get built before:
 3. The cold-calling muscle is established enough that building doesn't become avoidance
 
 Most of phase 2 probably activates around end of week 3 or start of week 4. Not before.
+
+**Exception:** the minimum viable inbound layer is a weekend project, not part of phase 2. It's narrow enough to scope tight, and it unblocks the next 50 calls. Don't let it expand into the larger phase 2 redesign.

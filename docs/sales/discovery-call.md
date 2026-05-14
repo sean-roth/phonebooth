@@ -4,6 +4,14 @@
 
 The goal is not to convince. The goal is to surface the trigger event, identify the most painful topic, and propose a single-module pilot.
 
+## On the medium
+
+**First discovery calls happen on the phone, not on video.** Trade owners don't manage calendared video meetings the way knowledge workers do. They'll agree to a Google Meet on a cold call and then forget the link by the time the meeting starts, or they'll prefer to just "talk on the phone" when you call. This is not a problem to solve — it's the audience's actual workflow. Discovery on the phone is the default; save video for the second meeting (proposal walkthrough, contract review, kickoff).
+
+For phone discovery calls: **use your personal cell phone, not the 312 Twilio number.** Twilio's outbound VoIP works fine for 14-second cold calls but degrades audibly on 15-minute conversations. Cell-to-cell is what trade owners are used to and produces dramatically better audio. The 312 number stays for cold outbound.
+
+If the prospect doesn't pick up when you call for the scheduled discovery, give it 5–10 minutes, then call once more. If still no answer, send a short text or email giving them control of the rescheduling. Don't call three times in one morning — reads as desperate.
+
 ## Open (2 minutes)
 
 Thank them. Restate the cold call so context is fresh. Ask if anything's shifted.
@@ -75,6 +83,14 @@ Then stop. Whoever talks first loses.
 **"Let me think about it."** — Fine. "What would you need to know to make a yes/no decision?" That answer tells you the real objection. Common ones: needs to ask spouse/partner, wants to see the LOTO demo first, needs to align with their CSP. Address each, propose next step with a date.
 
 **"It's more than I expected."** — "What were you thinking?" Listen. If they were thinking $500, they're not a fit yet — politely end. If they were thinking $1,500–$2,000, walk through the math: a single Level 2 custom-built module from their SOPs, with verified completion records, is $7,500–$22,500 in the broader market. You're priced at $3,500 because you're a small shop and they'd be early. If they still can't, end politely and put them in the demo-pipeline list.
+
+## When the call gets interrupted
+
+Trade owners take calls in trucks, on job sites, between crew issues. Expect interruptions. Two common shapes:
+
+**Mid-call distraction ("hold on, I gotta deal with this"):** Wait silently. Don't fill the space. When they come back, pick up exactly where you left off: *"You were telling me about how your new hires get trained..."* Acknowledging the interruption is unnecessary; resuming cleanly signals you respect their work.
+
+**Connection drops or hard time limit:** If they said they had 10 minutes and the call cuts at 8, don't pile on. Compress to the highest-priority remaining items. If you're past the four questions, go straight to the pilot pitch. If you're mid-questions, send a short text or email asking when they have another 10 minutes — don't call back three times in one morning.
 
 ## What success looks like
 
