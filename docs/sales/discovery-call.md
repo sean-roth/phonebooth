@@ -8,9 +8,33 @@ The goal is not to convince. The goal is to surface the trigger event, identify 
 
 **First discovery calls happen on the phone, not on video.** Trade owners don't manage calendared video meetings the way knowledge workers do. They'll agree to a Google Meet on a cold call and then forget the link by the time the meeting starts, or they'll prefer to just "talk on the phone" when you call. This is not a problem to solve — it's the audience's actual workflow. Discovery on the phone is the default; save video for the second meeting (proposal walkthrough, contract review, kickoff).
 
-For phone discovery calls: **use your personal cell phone, not the 312 Twilio number.** Twilio's outbound VoIP works fine for 14-second cold calls but degrades audibly on 15-minute conversations. Cell-to-cell is what trade owners are used to and produces dramatically better audio. The 312 number stays for cold outbound.
+For phone discovery calls: **use the dedicated discovery-line Pixel (separate cellular number), not the 312 Twilio number and not the personal cell.** Twilio's outbound VoIP works fine for 14-second cold calls but degrades audibly on 15-minute conversations. The personal cell gets ignored due to spam fatigue. A dedicated cellular line on a separate device solves both problems:
+
+- Real cellular voice for the 15-minute conversation, not VoIP
+- Doesn't compete with personal-line spam fatigue
+- One-tap native dialer when a callback comes in
+- Get a 312 number on the Pixel too if possible — keeps the brand consistent across cold call and discovery call ("calling from 312-XXX-XXXX" stays true whether you're dialing out or being dialed)
+
+Channel separation:
+- **Cold outbound (high volume, ~14 seconds):** Twilio 312 via phonebooth
+- **Discovery and follow-up calls (low volume, 10-20 minutes):** Pixel with dedicated 312 cellular line
+- **Personal life:** existing personal line, unused for business
+
+Setup: any MVNO with area code selection (Mint Mobile, US Mobile, Tello) at $10-15/month. ~30 minutes to provision.
 
 If the prospect doesn't pick up when you call for the scheduled discovery, give it 5–10 minutes, then call once more. If still no answer, send a short text or email giving them control of the rescheduling. Don't call three times in one morning — reads as desperate.
+
+## Cold-call-to-discovery handoff
+
+When you book a discovery call on a cold call, pre-warm the channel transition:
+
+> "I'll call you Tuesday at 10 from a different number — same name, just easier audio for a longer conversation."
+
+When you call them for the discovery, lead with the brand to bridge the number change:
+
+> "Hey [name], Sean from SOPs Nobody Reads — calling for our 10 o'clock."
+
+They recognize the brand immediately even though the number is unfamiliar.
 
 ## Open (2 minutes)
 
