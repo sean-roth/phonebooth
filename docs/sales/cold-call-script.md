@@ -28,7 +28,7 @@ Now run the rest. Confirm the name, then specifics:
 
 *They give name. Write it in phonebooth.*
 
-> "Appreciate it, [name]. I take the SOPs and procedures you already have and turn them into actual training your crews run on a phone or tablet. About a week per topic. How are you handling training these days — binder, online, something else?"
+> "Appreciate it, [name]. I build custom onboarding training for trade contractors. You give me your procedures, I turn them into a module your new hires actually finish. Are you having issues with your training right now?"
 
 Then listen.
 
