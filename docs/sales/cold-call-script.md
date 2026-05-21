@@ -14,7 +14,17 @@ The whole call is about 14 seconds before they decide. Fast qualification is the
 
 **Then stop talking.** Whoever talks first loses. Count to four if you have to.
 
+**Delivery: slow down.** The opener at conversational pace is 6 seconds. At nervous-rushed pace it's 3–4 seconds, and prospects miss the first two words because their ear hasn't caught up to the fact that someone's on the phone. The "Good morning" at the front is a 1-second buffer that gives them time to orient — don't drop it. If you find yourself getting "what?" twice in a morning, you're rushing; warm up the voice out loud before dialing.
+
 ## What happens next
+
+### They say "what?" / "who?" / "say again?"
+
+This is the most common stress moment in a cold call. Without a repair line you'll improvise from a flooded nervous system and the call dies. Have this memorized cold:
+
+> "Sorry — let me slow down. This is Sean from SOPs Nobody Reads. We build training for small contractors. Got 30 seconds?"
+
+Four beats. The "sorry, let me slow down" acknowledges what happened, takes the responsibility (lowers their guard), and signals a cleaner version is coming. Then brand name slow, then six-word description, then the ask again. Deliver it bored, not anxious. Bored signals "this happens, no big deal."
 
 ### They hang up
 
@@ -86,11 +96,37 @@ If they hesitate, that's the opening. If confident, point them to the demo and m
 
 ## Objections
 
+### "We're a small business"
+
+First encountered May 20, 2026, from a gatekeeper. This is almost never a real no. It's a reflexive deflection meaning one of three things underneath: *we don't have budget*, *we don't think this applies to shops our size*, or *we don't see ourselves as the kind of company that buys services*.
+
+The response is *not* "so am I" — that makes the call about you, not them. The response is a reframe of what the product is *for*:
+
+> "That's actually exactly who I built this for. Big outfits already have a safety department handling this — it's the small crews that get caught flat when a GC or insurance carrier asks for documented training and there's nothing to hand over. The whole point is making that defensible without needing to hire a safety person."
+
+If the speaker is a gatekeeper (not the owner), don't burn the full reframe on her. Lighter:
+
+> "Small crews are exactly who I work with. Is the owner around for two minutes? If it's not a fit he'll know fast."
+
+Save the full reframe for the decision-maker.
+
+### "We're too busy right now"
+
+> "Completely get it — that's the reason I keep it to one topic at a time, about a week, built from the SOP you already have. The busy season is usually when a missing training record bites hardest. Worth a 15-minute call to look at it when the dust settles?"
+
+If they don't engage further, send to demo and move on.
+
 ### "Just send me info"
 
 > "The fastest way is the demo on the site — sopsnobodyreads.com, takes 10 minutes to click through. Want to grab 15 minutes on my calendar after you've had a chance?"
 
 Point to the site, then ask for the calendar slot. The site does the info-send better than an email would.
+
+### "We already have training"
+
+> "Good — most shops have something. The question I'd ask is whether it'd hold up if a GC or OSHA asked you to produce records and walk through how your crew was trained. If it would, you're set. If you're not sure, that's the gap I work on."
+
+The reframe: most contractors have *something* labeled training (videos, sign-in sheets, the senior guy showing the new guy). The question isn't whether they have it; the question is whether it's defensible. That's a different conversation.
 
 ### "How much does it cost?"
 

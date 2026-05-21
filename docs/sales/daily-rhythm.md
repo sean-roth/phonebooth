@@ -43,6 +43,30 @@ Second contractor window. Owner back at desk doing quotes between morning and af
 
 Third contractor window. Crews wrapping or at the shop. Slightly lower pickup than morning but real conversations happen here.
 
+## The afternoon: lead prep for tomorrow
+
+The daily loop has two halves. Morning brain dials the list that already exists. Afternoon brain — depleted, post-dial, glad of a low-stakes task — builds *tomorrow's* list.
+
+**Never build the list the same morning you call.** Asking the dialing brain to also crawl Google Maps is exactly the context-switch that wrecks the dial window. The morning routine ends at the first call; everything before the first call is preparation. Lead prep is a different mode, and it belongs to afternoon energy.
+
+**Timer the prep the same way you timer the calls.** 15–20 minutes, 10–15 leads, done. Lead prep is a chore to discharge, not a craft to perfect. Two failure modes to watch:
+
+- *Perfectionism.* "I need a really good list" can become two hours of Google Maps when fifteen minutes was the job. The list-targeting doc has the segments; just fill the slots.
+- *Avoidance dialing.* Unconsciously biasing the list toward low-pickup leads because they hurt less. See the conversation-candidate rule in `docs/marketing/lead-targeting.md`. The lead-prep rule prevents bad lists; the dial block can't fix one.
+
+Good list + conservative count beats great list + ambitious count, every time.
+
+## Walk-between-calls protocol (for high-stakes lists)
+
+When the list is high-pickup-probability (mid-signal or polished segments, or any list where most dials will produce a real conversation), nervous-system load per call goes up 3–5x compared to anti-signal dialing. The protocol that protects you:
+
+- One call → walk 10–15 minutes → one call → walk again
+- Goal is *not* to get to "two calls in a row before walking." Goal is to complete however many calls your nervous system can sustain at the higher load.
+- Today's win might be 2 calls instead of 5. That's correct if those 2 were real conversations at sustainable activation.
+- The walks are *the operating procedure for high-stakes lists*, not a sign of weakness. You wouldn't bench press your max three times in a row without resting between sets.
+
+When you can sustain two calls in a row without the walk and still deliver a clean opener, the muscle has built. Move to walks-every-three. Then every-five. Same compression curve as the timer.
+
 ## On the window assumption
 
 The 6:00–7:30 AM MT window is the working hypothesis: owner-operators at the desk, before crews roll, before the casual office gatekeeper (wife, daughter, part-time receptionist) starts answering.
@@ -65,6 +89,8 @@ This means waking up at 5:30 AM MT. It's early. It's also the difference between
 
 Voicemails, dead lines, and gatekeepers are the cost of getting to conversations, not failures.
 
+**Updated May 22, 2026:** The metric tightens at week 2. Only pitches delivered to humans count toward the daily success bar. Dial counts and voicemails are operational — they're how you get to the conversations — but the conversation is the unit of value. *"Calls only count if I talk to a person, that's where the growth lives."*
+
 ## The week
 
 - **Monday:** Dial. Mondays often produce the best calls — energy is fresh.
@@ -78,7 +104,7 @@ No dialing weekends. Trade owners don't pick up.
 ## Week-by-week ramp
 
 - **Week 1:** Goal is 1 human conversation per day. Dial count secondary. Almost-bails-that-become-dials count as wins.
-- **Week 2:** 2 conversations per day. ~15 dials.
+- **Week 2:** 2 conversations per day. ~15 dials. Floor: 5 dials. Ceiling: 10.
 - **Week 3:** 3 conversations per day. ~20 dials.
 - **Week 4:** Steady state. First close possible.
 
@@ -96,6 +122,7 @@ No dialing weekends. Trade owners don't pick up.
 - **Dialing fewer than 10 in the block** — check: is the list bad? Did you eat? Are you avoiding one specific objection?
 - **No conversations after 50 dials** — something's wrong with the targeting or the opener. Listen back to recordings.
 - **Polite long calls with no closes** — you're not qualifying fast enough. Tighten the opener, embrace the fast hangup.
+- **Avoidance dialing (added May 20, 2026):** Picking leads you know won't pick up so the dial block produces null outcomes. Caught by the conversation-candidate rule in lead-targeting.md. If the list is biased this way, the dial block can't fix it — it just runs the avoidance you built into the prep.
 
 ## Emotional regulation
 

@@ -25,7 +25,7 @@ The current working hypothesis. Owner-operator who runs the business off a phone
 - Broken website link OR no website OR a website that hasn't been touched since pre-2020
 - Fewer than 50 Google reviews (often much fewer)
 - Mixed reviews are fine — even helpful — but require at least one positive review in the past 6 months as a "still operating" signal
-- Active business: most recent review within the past 12 months, ideally past 6
+- Active business: most recent review within the past 6 months
 - Based in Cook County, IL (or adjacent counties for spillover)
 
 **Hypothesis about this segment:**
@@ -90,6 +90,23 @@ Sophisticated, marketing-aware shops.
 Calling only the anti-signal segment will produce a distorted view of "what works." A 10% conversion rate on 50 anti-signal calls doesn't tell you whether that's because of the segment, the script, the pitch, or the brand. Mixing the segments lets the data be interpretable.
 
 The 70/20/10 split is also emotionally protective. The anti-signal segment is easier to call (low stakes, blunt prospects, less rejection sting). Starting each day with anti-signal calls and ending with mid-signal/polished calls builds confidence into the harder ones. Don't reverse the order.
+
+## The conversation-candidate rule (added 2026-05-20)
+
+Anti-signal targeting can drift into avoidance if "low polish" gets blurred with "low pickup probability." Those are different things. A landscaper with a broken website and 25 recent positive reviews is anti-signal AND likely to pick up. A landscaper with a broken website and no reviews in 14 months is anti-signal AND likely a dead line.
+
+The failure mode showed up on May 20: five dial-block calls produced zero conversations because the list was unconsciously biased toward leads that wouldn't answer. The dialing brain felt safer with null outcomes than with real conversations. That's the avoidance pattern wearing the targeting framework's clothes.
+
+**The rule:** of any 10 leads loaded for the next dial block, at least 6 must show signals suggesting a real human will answer:
+
+- Most recent review within the past 6 months
+- At least 3 positive reviews (any time)
+- Listed business hours visible on Google Maps
+- Either a working website OR an active social presence (one is enough)
+
+The other 4 can be deeper anti-signal — broken site, sparse reviews, mixed quality — for stretch targeting.
+
+This rule is enforced in lead prep (afternoon, day before), not during the dial block. The dial block can't fix a bad list — it can only run the list it was given. Bad lists produce avoidance dialing. Good lists produce conversations, which is where the actual training lives.
 
 ## What anti-signals predict — and don't
 

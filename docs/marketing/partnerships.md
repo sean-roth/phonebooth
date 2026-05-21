@@ -1,8 +1,8 @@
 # Partnerships
 
-The highest-leverage channel in the entire plan. One good insurance broker referring 3-5 contractors a year is worth more than 1,500 cold dials.
+The highest-leverage channel in the entire plan. One good insurance broker referring 3-5 contractors a year is worth more than 1,500 cold dials. A GC requiring documented training as a subcontract condition is even stronger — not a referral, a mandate.
 
-Full activation gates on first case study (you need something to show). Cold-call outreach to brokers can begin immediately in dead windows.
+Full activation gates on first case study (you need something to show). Cold-call outreach to brokers can begin immediately in dead windows; GC outreach activates after first case study.
 
 ## Why partnerships beat cold for this market
 
@@ -28,16 +28,47 @@ Where to find them:
 - Google Maps: "commercial insurance brokers Chicago" filtered for small agency feel
 - Cross-reference contractor websites — they often list their insurance carrier; the broker is one phone call away
 
-### GC compliance / prequal coordinators
+### General contractors (GCs)
 
-Internal employees at general contractors above ~25 employees. Their job includes verifying subcontractor safety prequal docs. They directly enforce what SOPs Nobody Reads sells.
+GCs are a different kind of partner than brokers. A broker *refers* because training reduces their risk on a policy. A GC can *require* documented training as a condition of the subcontract — that's a mandate, not a soft referral, which makes it structurally stronger.
 
-Lower referral volume than brokers but higher fit when they do refer.
+But the pitch to a GC is not *"your sub needs training, I'll build it."* A GC doesn't care about one sub. The pitch is:
 
-Where to find them:
-- LinkedIn search "safety coordinator" or "compliance manager" at Chicago GCs
+> "You're burning compliance-coordinator hours chasing prequal paperwork from a dozen subs. I can get your subs trained and documented in weeks, so your jobs don't get held up."
+
+You're solving the GC's *administrative drag*, not the subcontractor's training gap. The subcontractor is who pays you; the GC is who sends them.
+
+**Filtering criteria:**
+- Mid-size GCs (25–150 employees) — big enough to have a safety/compliance role, small enough that you can reach the decision-maker
+- Commercial focus (not pure residential remodel GCs — they don't enforce prequal the same way)
+- Cook County or adjacent
+- Active on commercial-bid platforms (Avetta, ISN, ComplyWorks) — indicates they're already in the prequal ecosystem
+
+**Contact path:**
+- Title to target: safety director, compliance manager, safety coordinator, prequal coordinator
+- Decision-maker is an employee, not the owner — different cold-call mechanics than brokers or contractors
+- Harder to reach by phone (more gatekeeping at GCs than at 2-person broker shops)
+- Often more responsive to LinkedIn outreach than contractor owners are
+
+**Where to find them:**
+- LinkedIn search "safety coordinator" / "compliance manager" at Chicago GCs
 - AGC Chicago member directory
-- Construction industry networking events
+- Construction industry networking events (more useful for GCs than for contractor outreach)
+
+**Activation timing:**
+- Don't pursue GC partnerships before first paying client. A GC needs to point to something concrete — *"this is the company my subs use"* — and without a case study you have nothing to anchor that claim.
+- Even after activation, expect a longer relationship-building cycle than brokers (3–6 months from first contact to first referred sub, vs. 1–3 months for brokers).
+- One closed GC partnership = potentially 5–20 subcontractor leads per year, all near-warm. Long lead time, high payoff.
+
+**The reframed pitch script (when ready):**
+
+```
+"Hi, this is Sean from SOPs Nobody Reads. I work with small commercial contractors on safety training that holds up for prequal docs — the stuff your team is probably chasing from subs every week. Reason I'm calling GCs: when your subs can't produce training records, your jobs get held up. I build that training fast — about a week per topic — from the sub's own SOPs. Curious how often training documentation is the bottleneck on your prequal process?"
+```
+
+### GC compliance / prequal coordinators (legacy section, see GC section above for fuller treatment)
+
+This category was originally listed separately and is now consolidated into the GC section above. The targeting is the same; the section above adds the strategic framing.
 
 ### Independent safety consultants
 
@@ -63,6 +94,8 @@ Owner-operator contractors are unreachable during 9:30-11:30 AM CT and 1:30-3:30
 | 3:30-5:00 PM | Contractors (wind-down) | Crews wrapping, owner at shop |
 
 Same activation cost (already in the chair). Different audience. Broker rejection feels different than contractor rejection because brokers aren't direct customers — lower stakes for the same dial volume. Plus broker calls are themselves desensitization training for contractor calls.
+
+GCs don't fit this window pattern as cleanly. Their compliance staff are office-hours employees, so any time 9–5 CT works, but the gatekeeping is heavier than broker shops. LinkedIn is often a better first-touch surface for GCs than cold call.
 
 ## Cold call script for brokers
 
@@ -98,10 +131,13 @@ Flat is cleaner for bookkeeping and easier to explain. Percentage is bigger upsi
 
 Get a one-page agreement signed before any referral. Includes: fee structure, payment terms, what counts as a "referred client," what doesn't (e.g., contractors already in your pipeline), 6-month attribution window.
 
+For GC partnerships, the finder's fee structure is the same but the mechanics differ: GCs typically don't take direct finder's fees (compliance issues, perceived conflicts of interest). Instead, structure as a "preferred vendor" relationship where the GC recommends you to subs without taking payment. The benefit to the GC is administrative — their prequal process gets faster — not financial.
+
 ## When to activate full partnership outreach
 
 - **Cold-call outreach to brokers in dead windows:** Now. No case study needed for first conversation; the goal is relationship and learning, not a referral on day one.
-- **Formal partnership pitch with finder's fee:** After first paying client. The case study is what gives the broker something concrete to point at.
+- **Formal broker partnership pitch with finder's fee:** After first paying client. The case study is what gives the broker something concrete to point at.
+- **GC partnership outreach:** After first paying client. GCs need to see a concrete example to recommend you to their subs.
 - **Regular partnership review (quarterly):** After 3-5 active broker relationships. Review which brokers are referring, which aren't, and why.
 
 ## What partnership outreach is NOT
@@ -114,6 +150,6 @@ Get a one-page agreement signed before any referral. Includes: fee structure, pa
 ## Goal trajectory
 
 - Month 1: 5-10 broker conversations completed (cold calls in dead windows). No formal pitch yet.
-- Month 2: First case study completed. Begin formal partnership outreach to top 3 brokers from month 1.
-- Month 4: 3-5 active broker relationships with finder's fee agreements signed.
-- Month 6: Partnership-sourced discovery calls match or exceed cold-call-sourced discovery calls.
+- Month 2: First case study completed. Begin formal partnership outreach to top 3 brokers from month 1. Begin GC outreach (LinkedIn-first).
+- Month 4: 3-5 active broker relationships with finder's fee agreements signed. 1–2 GC preferred-vendor conversations in motion.
+- Month 6: Partnership-sourced discovery calls match or exceed cold-call-sourced discovery calls. First GC-referred sub closes.
