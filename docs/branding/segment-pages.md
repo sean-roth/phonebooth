@@ -4,7 +4,7 @@ The four `/for/[segment]` pages serve visitors who clicked the "Who is this for"
 
 The architecture is consistent across all four pages:
 
-1. **Hero** — pain-first headline that names the segment's specific operational pain, with a quieter subtitle that names the training as the answer. Primary CTA above the fold, plus a scroll cue inviting the curious visitor to keep going.
+1. **Hero** — a headline that names the segment's specific operational reality, with a quieter subtitle that names the training as the answer. Primary CTA above the fold, plus a scroll cue inviting the curious visitor to keep going.
 
 2. **Story** — three scenes, each with a non-figurative illustration and a short blurb. The scenes form a narrative arc: setup, intervention, outcome. The story shows what the training looks like in use without claiming or pitching.
 
@@ -25,6 +25,17 @@ The brand's cosplay test applies with full force on the segment pages. Showing f
 The segment pages match the homepage's observational register. The brand describes what happens, not what the customer should do. The reader recognizes himself in the scene without being told he's the subject.
 
 Pain language uses the customer's own vocabulary. *Best guy* not *journeyman.* *Losing daylight* not *productivity loss.* *Find out what he doesn't know* not *learning gap identification.* The page sounds like someone who has been in operational conversations with this segment, because Sean has.
+
+## The interpersonal layer
+
+A pattern that holds across all four segments and surfaces most visibly in the property manager page: **interpersonal work is part of physical work whenever physical work happens in proximity to other humans.** Every segment has its own version of it:
+
+- **Property managers:** the tenant whose home you just entered
+- **Warehouses:** the driver at the receiving dock, the dispatcher on the radio, the customer's representative during a peak audit
+- **Contractors:** the homeowner watching you work, the GC's super, the inspector arriving on site
+- **Manufacturers:** the shift partner, the QA inspector, the contractor visiting the floor
+
+Every one of these is operational interaction — happening in the context of physical work, with operational consequences when it goes wrong. None of it is knowledge work. The training covers both the technical and the interpersonal because in physical work they happen together. This is a real differentiator: competitors in compliance training cover only the technical side.
 
 ---
 
@@ -66,13 +77,47 @@ Pain language uses the customer's own vocabulary. *Best guy* not *journeyman.* *
 
 ---
 
-## Property manager page (to be drafted)
+## Property manager page
 
-**Operational scenario:** Maintenance staff visiting tenant units. Technical repair is table stakes; the differentiator is how the maintenance person interacts with the tenant — communication, courtesy, leaving the unit better than they found it.
+A note on segment scope: this page is for the **operations side** of property management — maintenance, vendor coordination at the property level, tenant interactions during service work, turnover and unit prep. Not the sales/leasing side, which is knowledge work and outside the brand's market. The page should keep the visitor on the operational half by being so specific about maintenance operations that leasing never enters the frame.
 
-**Hero direction (draft):** Pain-first language naming the tenant interaction problem. Possibly *Your maintenance staff is one bad tenant interaction away from a one-star review.* Subtitle names the training as the answer.
+### Hero
 
-**Story arc:** A maintenance tech preparing for a call → reviewing the procedure and the tenant interaction protocol on a phone before knocking → completing the work in a way that leaves the tenant calmer than when he arrived.
+> # The technical work is what your staff knows. The human work is what your tenants remember.
+> ### Custom training that gets both right.
+>
+> *Book the call →*
+>
+> [↓ See what it looks like]
+
+A note on tone: this segment breaks from the pain-first pattern of the contractor page. The pain is named more observationally — *the human work is what your tenants remember* — because *one bad tenant interaction away from a one-star review* edges toward scare-tactic register, which doesn't match the brand's voice. The chronic version of the pain (bad maintenance interactions hurt retention; turnover costs add up) is more accurate to the segment's reality and lands better through observation than alarm.
+
+### Story
+
+**Scene 1**
+> [non-figurative illustration: a closed door rendered as a flat rectangle on cream background, with a small forest green knock-mark or contact-point — suggesting the moment of arrival, anticipation]
+>
+> A tenant called this morning. The dishwasher's leaking. Your maintenance tech is heading there now. He's walked into 200 apartments this year — but this is the first time he's been in this one, and the tenant doesn't know him.
+
+**Scene 2**
+> [non-figurative illustration: a small rectangular shape (phone or tablet) with structured marks — the procedure and the protocol displayed in parallel, two columns of small forest green shapes]
+>
+> Before he knocks, he pulls up the unit's procedure on his phone. The dishwasher model, the shutoff location, the common failure points. He also reviews the tenant interaction protocol — what to say at the door, what to ask before working, what to leave when he's done. Two minutes.
+
+**Scene 3**
+> [non-figurative illustration: the door from Scene 1 now open, with a clean threshold-line — suggesting completion, the unit left in better shape than found]
+>
+> He fixes the appliance. But he also introduces himself, asks before moving anything, explains what went wrong, cleans up after himself, and tells the tenant what to watch for. The leak is gone. The tenant is calmer than when he arrived. The training did that.
+
+### Closing
+
+> ## What's in the training
+>
+> Modules built from your buildings, your appliances, your procedures — and the protocols your maintenance staff needs for being a guest in someone's home.
+>
+> *Book the call →*
+
+A note on the closing: *being a guest in someone's home* is the segment page's signature phrase. It elevates the tenant interaction work from "customer service" to dignified operational work with method and values behind it. Property managers will recognize this as the right framing — they've been trying to articulate it to their staff for years without quite having the words.
 
 ---
 
@@ -84,6 +129,8 @@ Pain language uses the customer's own vocabulary. *Best guy* not *journeyman.* *
 
 **Story arc:** A new picker on day three → pulling up the forklift safety refresher before her first shift on the dock → going to work without needing the senior picker to walk her through it again.
 
+**Interpersonal layer to consider:** The driver at the receiving dock, the dispatcher, the customer's rep during a peak audit. These interactions are operational and trainable, same as the property manager's tenant interactions. May or may not be foregrounded depending on what real conversations surface.
+
 ---
 
 ## Manufacturer page (to be drafted)
@@ -94,14 +141,14 @@ Pain language uses the customer's own vocabulary. *Best guy* not *journeyman.* *
 
 **Story arc:** New operator at a machine, unsure about a setting → pulling up the training on a phone, finding the specific step → running the machine correctly without waiting or wandering.
 
+**Interpersonal layer to consider:** Shift partners, QA inspectors, contractors visiting the floor. Worth checking with a real manufacturer conversation before drafting.
+
 ---
 
-## Notes on the remaining three pages
+## Notes on the remaining two pages
 
-The contractor page above is the template. The other three follow the same three-section architecture (hero → story → closing) with segment-specific scenarios. Each one needs its hero copy, three scenes with blurbs, and a closing line drafted.
+The contractor and property manager pages above are committed templates. The other two follow the same three-section architecture (hero → story → closing) with segment-specific scenarios.
 
-The property manager page especially deserves careful drafting because of the tenant interaction angle, which is the segment's strongest differentiator and the one most often missed by other vendors.
-
-The manufacturer page is the segment where Sean's direct contact is most limited. The scenario above is plausible but should be checked against real conversations with manufacturers before going live.
+The manufacturer page is the segment where Sean's direct contact is most limited. The scenario is plausible but should be checked against real conversations with manufacturers before going live.
 
 The warehouse page has good signal from the Taiwanese students' outbound calling — operational realities surfacing through those conversations should be incorporated when drafting.
