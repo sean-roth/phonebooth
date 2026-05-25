@@ -12,6 +12,20 @@ SOPs Nobody Reads is a small instructional design practice run by Sean Roth. The
 
 ---
 
+## Source of truth — brand intent vs. implementation
+
+This document is the source of truth for **brand intent and copy**: what the brand believes, who it serves, what colors and typefaces it uses, what the homepage and segment pages say, what imagery looks like, what's outside the brand entirely.
+
+The **canonical implementation** lives in a separate repository (`sopsnobodyreads-site`). The `styles.css` and rendered pages there are the source of truth for **component patterns and CSS tokens**: how a CTA renders (italic Lora, aubergine, underlined, generous touch target), how a section structures (h2 with max-width, prose at measure, figure beneath), how the nav dropdown works (`<details>` element with focus-within behavior), how figures and captions sit (cream box, low-opacity forest-green border, Plex italic caption).
+
+**When to consult which:**
+- *What color, what typeface, what does the page say, what does the brand reject* → DESIGN.md
+- *How does a button look, what's the type scale math, how does the dropdown behave, what's the spacing system* → the implementation repo's `styles.css`
+
+Both should be loaded when generating new surfaces. Brand intent without implementation patterns produces drift in how components render. Implementation patterns without brand intent produces drift in what the brand says and means.
+
+---
+
 ## The market
 
 **Active segments:**
@@ -98,6 +112,8 @@ font-family: 'IBM Plex Sans', system-ui, sans-serif;
 ```
 
 Use `font-display: swap` for both.
+
+*(For the actual implemented type scale, clamp() math, and rendered weights, see `styles.css` in the implementation repo.)*
 
 ---
 
@@ -302,7 +318,7 @@ Three sections:
 - Tech-startup minimalism
 - Craftsman-tool imagery (verges on self-indulgent; also edges toward exclusion of customers whose specific craft isn't depicted)
 
-**Production:** AI image generation (Seedream 4.5 on Replicate). Most generations will be rejected. Discipline of rejection is what creates a consistent visual library rather than a stream of AI outputs.
+**Production:** AI image generation, curated against the criteria above. Most generations will be rejected. Discipline of rejection is what creates a consistent visual library rather than a stream of AI outputs.
 
 **Visual vocabulary across segment pages:**
 - Scene 1: state of disorder, tangle, drift (the problem)
@@ -311,7 +327,7 @@ Three sections:
 
 The recurring "rectangular form with structured marks" in Scene 2 of every segment page becomes a visual signature for *the training itself.*
 
-**For specific generation-ready prompts, see `image-prompts.md`.**
+**For specific generation-ready prompts, see `image-prompts.md`.** Note: those prompts were originally tuned for Seedream 4.5 and may need adjustment for other models.
 
 ---
 
@@ -335,7 +351,15 @@ Direct. Confessional. Specific. Names triggers and pain by their real names. Com
 - Use the customer's own vocabulary (*best worker* not *journeyman*, *losing daylight* not *productivity loss*)
 - Observational over instructional (the brand describes what happens, doesn't tell the customer what to do)
 - Plain language is the default; segment-specific calibration is the optimization
-- Avoid AI tells: forced negation (*Not X. Y.* construction), three adjectives in a row, false parallelism, *we believe* corporate-speak
+
+**AI tells to avoid (all of these betray the observational register):**
+- Forced negation: *Not X. Y.* construction (e.g., *"Not because your crew doesn't care. Because nobody reads..."*)
+- Three adjectives in a row (*modern, scalable, intuitive*)
+- False parallelism — parallel structure that doesn't carry parallel meaning
+- *We believe* corporate-speak
+- *Whether you're X, Y, or Z...* openers — addresses the visitor's identity rather than describing the situation
+- *It's not just X — it's Y* pivot — adds false escalation and is everywhere in AI marketing copy
+- Generic *we help businesses...* construction
 
 **Phrases that carry brand weight and should not be paraphrased:**
 - "Aiding in craftsmanship" (brand posture, internal only)
@@ -383,16 +407,19 @@ If the AI encounters a request that conflicts with these, treat it as drift to f
 - Generic "we help businesses..." corporate language
 - Three-adjective constructions ("modern, scalable, intuitive")
 - Forced negation patterns
+- *Whether you're X, Y, or Z...* openers
+- *It's not just X — it's Y* pivots
 
 ---
 
 ## Quick lookup index
 
 **Need the palette?** Section "Palette (committed)"
-**Need the typography?** Section "Typography (committed)"
+**Need the typography?** Section "Typography (committed)" — and `styles.css` for implemented type scale
 **Need the homepage copy?** Section "Homepage copy (committed)"
 **Need a specific segment page?** Section "Segment page copy (committed)"
 **Need imagery direction?** Section "Imagery direction" (and `image-prompts.md` for actual prompts)
+**Need a component pattern (CTA, nav, figure, section)?** The implementation repo's `styles.css`
 **Need to check if something is on-brand?** Sections "The cosplay test," "Brand voice," "What's outside the brand entirely"
 **Need to understand why a choice was made?** See individual files in this directory; each one has rationale notes.
 
@@ -412,4 +439,8 @@ Other files in this directory provide deeper rationale:
 - `cold-call-pitch.md` — sales script (contractor-scoped)
 - `discovery-questions.md` — 15-minute call structure (contractor-scoped)
 
-DESIGN.md (this file) consolidates what an AI needs for fast lookup. The other files preserve the reasoning that produced each decision.
+The implementation repository (`sopsnobodyreads-site`) holds the rendered site, including:
+- `styles.css` — component patterns, CSS tokens, type scale math, layout systems, interactive behaviors
+- The actual homepage and segment page HTML
+
+DESIGN.md (this file) consolidates what an AI needs for fast lookup on brand intent and copy. The other files in this directory preserve the reasoning that produced each decision. The implementation repo holds the canonical rendering.
