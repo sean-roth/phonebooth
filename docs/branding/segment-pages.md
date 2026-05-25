@@ -24,7 +24,9 @@ The brand's cosplay test applies with full force on the segment pages. Showing f
 
 The segment pages match the homepage's observational register. The brand describes what happens, not what the customer should do. The reader recognizes himself in the scene without being told he's the subject.
 
-Pain language uses the customer's own vocabulary. *Best guy* not *journeyman.* *Losing daylight* not *productivity loss.* *Find out what he doesn't know* not *learning gap identification.* The page sounds like someone who has been in operational conversations with this segment, because Sean has.
+Pain language uses the customer's own vocabulary. *Best worker* not *journeyman.* *Losing daylight* not *productivity loss.* *Find out what he doesn't know* not *learning gap identification.* The page sounds like someone who has been in operational conversations with this segment.
+
+**Language calibration by segment:** The contractor page uses some vernacular (*losing daylight*) because the segment's primary buyers are native English speakers who use that vocabulary themselves. The warehouse page uses plainer language because a significant portion of warehouse operations buyers are non-native English speakers (initial focus is Taiwanese-American warehouse operators). The property manager page sits in between — plain language but allows some brand voice through phrases like *being a guest in someone's home*. Plain language is the safer default; segment-specific calibration is the optimization.
 
 ## The interpersonal layer
 
@@ -43,8 +45,8 @@ Every one of these is operational interaction — happening in the context of ph
 
 ### Hero
 
-> # Your best guy is losing daylight to repeated lessons.
-> ### Custom training that lets the new guy find out what he doesn't know.
+> # Your best worker is losing daylight to repeat questions.
+> ### Custom training that lets the new hire find out what he doesn't know.
 >
 > *Book the call →*
 >
@@ -55,17 +57,17 @@ Every one of these is operational interaction — happening in the context of ph
 **Scene 1**
 > [non-figurative illustration: a tangled thread on cream background, the tangle dense and unresolved — suggesting questions piling up, no clear path through]
 >
-> Your best guy is on his fourth job of the day. The new guy is shadowing him. Every fifteen minutes there's another question — sometimes about something the new guy should have picked up two jobs ago.
+> Your best worker is on his fourth job of the day. The new hire is shadowing him. Every fifteen minutes there's another question — sometimes about something the new hire should have picked up two jobs ago.
 
 **Scene 2**
 > [non-figurative illustration: a clean rectangular shape on cream background, with small forest green marks arranged in clear sequence — suggesting structured procedure, ordered information]
 >
-> The new guy pulls up the training on a tablet. Ninety seconds on the procedure he's about to try. He sees the steps, the specific equipment your shop uses, what to watch for, what goes wrong when it goes wrong.
+> The new hire pulls up the training on a tablet. Ninety seconds on the procedure he's about to try. He sees the steps, the specific equipment your shop uses, what to watch for, what goes wrong when it goes wrong.
 
 **Scene 3**
 > [non-figurative illustration: a thread now tied in a clean knot or visible sequence — the tangle from Scene 1 resolved, the connection deliberate]
 >
-> Now his questions are different. He's not asking what to do — he knows what to do. He's asking *why this fitting goes in first* or *what does it look like when it's wrong.* Your best guy gets to teach the part that requires him.
+> Now his questions are different. He's not asking what to do — he knows what to do. He's asking *why this fitting goes in first* or *what does it look like when it's wrong.* Your best worker gets to teach the part that requires him.
 
 ### Closing
 
@@ -90,19 +92,19 @@ A note on segment scope: this page is for the **operations side** of property ma
 >
 > [↓ See what it looks like]
 
-A note on tone: this segment breaks from the pain-first pattern of the contractor page. The pain is named more observationally — *the human work is what your tenants remember* — because *one bad tenant interaction away from a one-star review* edges toward scare-tactic register, which doesn't match the brand's voice. The chronic version of the pain (bad maintenance interactions hurt retention; turnover costs add up) is more accurate to the segment's reality and lands better through observation than alarm.
+A note on tone: this segment breaks from the pain-first pattern of the contractor page. The pain is named more observationally because *one bad tenant interaction away from a one-star review* edges toward scare-tactic register, which doesn't match the brand's voice. The chronic version of the pain (bad maintenance interactions hurt retention; turnover costs add up) is more accurate to the segment's reality and lands better through observation than alarm.
 
 ### Story
 
 **Scene 1**
 > [non-figurative illustration: a closed door rendered as a flat rectangle on cream background, with a small forest green knock-mark or contact-point — suggesting the moment of arrival, anticipation]
 >
-> A tenant called this morning. The dishwasher's leaking. Your maintenance tech is heading there now. He's walked into 200 apartments this year — but this is the first time he's been in this one, and the tenant doesn't know him.
+> A tenant called this morning. The dishwasher is leaking. Your maintenance worker is heading there now. He has walked into 200 apartments this year — but this is the first time he has been in this one, and the tenant doesn't know him.
 
 **Scene 2**
-> [non-figurative illustration: a small rectangular shape (phone or tablet) with structured marks — the procedure and the protocol displayed in parallel, two columns of small forest green shapes]
+> [non-figurative illustration: a small rectangular shape (phone or tablet) with structured marks — the procedure and how to handle the interaction displayed in parallel, two columns of small forest green shapes]
 >
-> Before he knocks, he pulls up the unit's procedure on his phone. The dishwasher model, the shutoff location, the common failure points. He also reviews the tenant interaction protocol — what to say at the door, what to ask before working, what to leave when he's done. Two minutes.
+> Before he knocks, he pulls up the procedure on his phone. The dishwasher model, the shutoff location, the common failure points. He also reviews how to handle the tenant interaction — what to say at the door, what to ask before working, what to leave when he is done. Two minutes.
 
 **Scene 3**
 > [non-figurative illustration: the door from Scene 1 now open, with a clean threshold-line — suggesting completion, the unit left in better shape than found]
@@ -113,7 +115,7 @@ A note on tone: this segment breaks from the pain-first pattern of the contracto
 
 > ## What's in the training
 >
-> Modules built from your buildings, your appliances, your procedures — and the protocols your maintenance staff needs for being a guest in someone's home.
+> Modules built from your buildings, your appliances, your procedures — and what your maintenance staff needs to know about being a guest in someone's home.
 >
 > *Book the call →*
 
@@ -121,15 +123,43 @@ A note on the closing: *being a guest in someone's home* is the segment page's s
 
 ---
 
-## Warehouse page (to be drafted)
+## Warehouse page
 
-**Operational scenario:** New picker or forklift operator joining the warehouse. The cert requirements are real; the integration with the specific warehouse's inventory system, racking, and workflow is what makes the training useful.
+A note on language: this page is calibrated for plain language because the primary initial buyer audience is Taiwanese-American warehouse operators. Common words, short sentences, no idiom, no metaphor, no compressed parallel construction. The plainness extends through the whole page, not just the hero — voice consistency matters.
 
-**Hero direction (draft):** Pain-first language naming the ramp-up problem. Possibly *Your senior picker is spending half her week training new hires.* Subtitle names the training as the answer.
+### Hero
 
-**Story arc:** A new picker on day three → pulling up the forklift safety refresher before her first shift on the dock → going to work without needing the senior picker to walk her through it again.
+> # Your new hires need to be accurate from day one.
+> ### Custom training that teaches what experienced workers already know.
+>
+> *Book the call →*
+>
+> [↓ See what it looks like]
 
-**Interpersonal layer to consider:** The driver at the receiving dock, the dispatcher, the customer's rep during a peak audit. These interactions are operational and trainable, same as the property manager's tenant interactions. May or may not be foregrounded depending on what real conversations surface.
+### Story
+
+**Scene 1**
+> [non-figurative illustration: a sequence of small marks arranged in a clean line, but one mark in the middle is subtly off — slightly tilted or in the wrong shade — suggesting a small error that's easy to miss]
+>
+> Wednesday morning. Your lead is on a different floor handling a vendor problem. A new worker is on the line. She pulled the wrong item twice this hour and didn't notice. The cartons are already on the truck.
+
+**Scene 2**
+> [non-figurative illustration: a small rectangular shape with structured marks — a phone or tablet displaying organized procedure information against the cream background]
+>
+> She opens the training before her shift. The two items she keeps confusing are shown side by side: what they look like, where they are stored, what the labels say, what to check before scanning. Three minutes.
+
+**Scene 3**
+> [non-figurative illustration: the original line of marks from Scene 1, now all consistent and correctly aligned — the small error from earlier resolved]
+>
+> Now she sees the difference. Her speed catches up to the experienced workers within a week instead of a month. Errors get caught before the customer sees them. Your lead handles the vendor problem without worrying about the floor.
+
+### Closing
+
+> ## What's in the training
+>
+> Modules built from your warehouse's actual items, racking layout, scanner steps, and daily procedures.
+>
+> *Book the call →*
 
 ---
 
@@ -143,12 +173,12 @@ A note on the closing: *being a guest in someone's home* is the segment page's s
 
 **Interpersonal layer to consider:** Shift partners, QA inspectors, contractors visiting the floor. Worth checking with a real manufacturer conversation before drafting.
 
+**Language calibration:** Likely closer to plain language than the contractor page, since manufacturer audiences include significant non-native English readership and the segment is broader (small precision shops, large floor operations, specialty fabricators).
+
 ---
 
-## Notes on the remaining two pages
+## Notes on the manufacturer page
 
-The contractor and property manager pages above are committed templates. The other two follow the same three-section architecture (hero → story → closing) with segment-specific scenarios.
+The contractor, property manager, and warehouse pages above are committed templates. The manufacturer page follows the same three-section architecture (hero → story → closing) with segment-specific scenarios.
 
 The manufacturer page is the segment where Sean's direct contact is most limited. The scenario is plausible but should be checked against real conversations with manufacturers before going live.
-
-The warehouse page has good signal from the Taiwanese students' outbound calling — operational realities surfacing through those conversations should be incorporated when drafting.
