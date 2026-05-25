@@ -2,6 +2,14 @@
 
 The layered model of the brand, from deepest to most surface. Each layer governs the one above it. The surface (visual identity, copy, taglines) is the *last* thing decided, not the first — because every surface choice has to be expressing one of the deeper layers correctly.
 
+---
+
+**The brand's posture, in three words: aiding in craftsmanship.**
+
+Every decision in this document is a refinement of that posture. The brand is in service to other people's craft — never claiming it, never imitating it, always supporting it. This phrase doesn't appear on the homepage (too lofty for that surface) but it governs every choice that does.
+
+---
+
 ## 1. Essence
 
 **Tribal knowledge deserves to be transmitted.**
@@ -62,7 +70,7 @@ A mid-career editorial designer or museum curator who chose this work over a mor
 
 The closest professional analog: **a luthier.** Builds the instrument that lets the musician's craft be heard. Doesn't write the music. Doesn't play the music. Is a master of his own craft precisely because he knows he's not the musician. The luthier has no cosplay risk because his identity is built on the clear distinction between his work and the musician's.
 
-The phrase that captures it best: **aiding in craftsmanship.**
+The brand's posture — *aiding in craftsmanship* — is the deepest articulation of this character. The phrase deliberately stays in the foundations doc rather than on customer-facing surfaces, because the customer doesn't need to be told what the brand's relationship to his craft is. The customer needs to feel it through every other choice the brand makes.
 
 ## 6. Voice
 
@@ -88,7 +96,7 @@ This test applies equally across all segments: the brand should not cosplay as a
 
 **Deeper frame (never stated directly, but felt in every choice):**
 
-> A common reference for what your people are supposed to know. The institutional artifact your operation has never had.
+> A common reference for what your people are supposed to know. The institutional artifact your operation has never had. Aiding in craftsmanship.
 
 The surface and the depth don't have to be the same words. The visitor reads "custom training" and his vocabulary matches the page. The depth shapes everything around the surface — the design, the voice, the way the modules feel — without ever being named.
 
