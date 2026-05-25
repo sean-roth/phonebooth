@@ -26,7 +26,9 @@ The segment pages match the homepage's observational register. The brand describ
 
 Pain language uses the customer's own vocabulary. *Best worker* not *journeyman.* *Losing daylight* not *productivity loss.* *Find out what he doesn't know* not *learning gap identification.* The page sounds like someone who has been in operational conversations with this segment.
 
-**Language calibration by segment:** The contractor page uses some vernacular (*losing daylight*) because the segment's primary buyers are native English speakers who use that vocabulary themselves. The warehouse page uses plainer language because a significant portion of warehouse operations buyers are non-native English speakers (initial focus is Taiwanese-American warehouse operators). The property manager page sits in between — plain language but allows some brand voice through phrases like *being a guest in someone's home*. Plain language is the safer default; segment-specific calibration is the optimization.
+**Language calibration by segment:** The contractor page uses some vernacular (*losing daylight*) because the segment's primary buyers are native English speakers who use that vocabulary themselves. The warehouse page uses plainer language because a significant portion of warehouse operations buyers are non-native English speakers (initial focus is Taiwanese-American warehouse operators). The property manager page sits in between — plain language but allows some brand voice through phrases like *being a guest in someone's home*. The manufacturer page uses plain, direct language to maintain accessibility across the broader segment. Plain language is the safer default; segment-specific calibration is the optimization.
+
+**Pronoun convention:** All segment pages use *he* for hypothetical workers. The brand's market sectors (trade contractors, property maintenance, warehouses, manufacturing) have outsized male representation. Using *he* throughout reflects statistical reality without making a claim about who can or should do the work.
 
 ## The interpersonal layer
 
@@ -141,17 +143,17 @@ A note on language: this page is calibrated for plain language because the prima
 **Scene 1**
 > [non-figurative illustration: a sequence of small marks arranged in a clean line, but one mark in the middle is subtly off — slightly tilted or in the wrong shade — suggesting a small error that's easy to miss]
 >
-> Wednesday morning. Your lead is on a different floor handling a vendor problem. A new worker is on the line. She pulled the wrong item twice this hour and didn't notice. The cartons are already on the truck.
+> Wednesday morning. Your lead is on a different floor handling a vendor problem. A new worker is on the line. He pulled the wrong item twice this hour and didn't notice. The cartons are already on the truck.
 
 **Scene 2**
 > [non-figurative illustration: a small rectangular shape with structured marks — a phone or tablet displaying organized procedure information against the cream background]
 >
-> She opens the training before her shift. The two items she keeps confusing are shown side by side: what they look like, where they are stored, what the labels say, what to check before scanning. Three minutes.
+> He opens the training before his shift. The two items he keeps confusing are shown side by side: what they look like, where they are stored, what the labels say, what to check before scanning. Three minutes.
 
 **Scene 3**
 > [non-figurative illustration: the original line of marks from Scene 1, now all consistent and correctly aligned — the small error from earlier resolved]
 >
-> Now she sees the difference. Her speed catches up to the experienced workers within a week instead of a month. Errors get caught before the customer sees them. Your lead handles the vendor problem without worrying about the floor.
+> Now he sees the difference. His speed catches up to the experienced workers within a week instead of a month. Errors get caught before the customer sees them. Your lead handles the vendor problem without worrying about the floor.
 
 ### Closing
 
@@ -163,22 +165,42 @@ A note on language: this page is calibrated for plain language because the prima
 
 ---
 
-## Manufacturer page (to be drafted)
+## Manufacturer page
 
-**Operational scenario:** A new operator on a large floor, not sure about a setting, far from anyone who can answer. The reference-at-scale value of having training in the operator's pocket on a 200,000 square foot floor.
+A note on language: plain and direct throughout, similar to the warehouse page. Manufacturing audiences include significant non-native English readership and the segment is broad (small precision shops, large floor operations, specialty fabricators). Plainness serves all of them.
 
-**Hero direction (draft):** Pain-first language naming the floor-scale problem. Possibly *Your new operator is two hundred yards from anyone who knows the answer.* Subtitle names the training as the answer.
+### Hero
 
-**Story arc:** New operator at a machine, unsure about a setting → pulling up the training on a phone, finding the specific step → running the machine correctly without waiting or wandering.
+> # Train your new hires the same way every time.
+> ### Custom training that doesn't change with whoever does the teaching.
+>
+> *Book the call →*
+>
+> [↓ See what it looks like]
 
-**Interpersonal layer to consider:** Shift partners, QA inspectors, contractors visiting the floor. Worth checking with a real manufacturer conversation before drafting.
+A note on the hero: the plural *new hires* implies the drift problem without naming it. *Same way every time* covers consistency across people and across instances. The buyer reads the hero and feels the chronic anxiety of inconsistent training without the brand having to explain the mechanism.
 
-**Language calibration:** Likely closer to plain language than the contractor page, since manufacturer audiences include significant non-native English readership and the segment is broader (small precision shops, large floor operations, specialty fabricators).
+### Story
 
----
+**Scene 1**
+> [non-figurative illustration: a sequence of small forest green marks, each slightly less precise than the one before — suggesting a pattern degrading across iterations]
+>
+> Your shift lead trained the experienced operator. That operator is training the new hire this week. By the time the procedure reaches him, three small details have changed and nobody remembers why.
 
-## Notes on the manufacturer page
+**Scene 2**
+> [non-figurative illustration: a clean rectangular shape with structured marks — a canonical version of the procedure, against which any variation can be compared]
+>
+> We capture the procedure correctly — what it looks like when it's right, what the common mistakes are, what the judgment calls require. The training becomes the standard. Everyone runs through the same version.
 
-The contractor, property manager, and warehouse pages above are committed templates. The manufacturer page follows the same three-section architecture (hero → story → closing) with segment-specific scenarios.
+**Scene 3**
+> [non-figurative illustration: a sequence of marks now all consistent and matching the canonical form — the pattern stabilized across iterations]
+>
+> Now your new hire is learning the procedure the same way your senior operator did. When he trains the next new hire, it stays the same. The drift stops. The standard is the standard.
 
-The manufacturer page is the segment where Sean's direct contact is most limited. The scenario is plausible but should be checked against real conversations with manufacturers before going live.
+### Closing
+
+> ## What's in the training
+>
+> Modules built from your equipment, your procedures, and the knowledge your senior operators have built over years on your floor.
+>
+> *Book the call →*
