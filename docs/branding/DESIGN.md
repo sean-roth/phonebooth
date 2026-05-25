@@ -318,7 +318,7 @@ Three sections:
 - Tech-startup minimalism
 - Craftsman-tool imagery (verges on self-indulgent; also edges toward exclusion of customers whose specific craft isn't depicted)
 
-**Production:** AI image generation, curated against the criteria above. Most generations will be rejected. Discipline of rejection is what creates a consistent visual library rather than a stream of AI outputs.
+**Production:** AI image generation via Seedream 4.5 on Replicate, curated against the criteria above. Most generations will be rejected. Discipline of rejection is what creates a consistent visual library rather than a stream of AI outputs.
 
 **Visual vocabulary across segment pages:**
 - Scene 1: state of disorder, tangle, drift (the problem)
@@ -327,7 +327,7 @@ Three sections:
 
 The recurring "rectangular form with structured marks" in Scene 2 of every segment page becomes a visual signature for *the training itself.*
 
-**For specific generation-ready prompts, see `image-prompts.md`.** Note: those prompts were originally tuned for Seedream 4.5 and may need adjustment for other models.
+**For specific generation-ready prompts, see `image-prompts.md`.**
 
 ---
 
@@ -434,7 +434,7 @@ Other files in this directory provide deeper rationale:
 - `typography.md` — typography decisions with full rationale
 - `homepage-copy.md` — homepage with section-by-section notes
 - `segment-pages.md` — segment pages with architectural notes and segment-specific tone discussion
-- `image-prompts.md` — 16 generation-ready prompts with notes
+- `image-prompts.md` — 16 generation-ready prompts tuned for Seedream 4.5 on Replicate
 - `designer-brief.md` — synthesis for human designers
 - `cold-call-pitch.md` — sales script (contractor-scoped)
 - `discovery-questions.md` — 15-minute call structure (contractor-scoped)
@@ -442,5 +442,7 @@ Other files in this directory provide deeper rationale:
 The implementation repository (`sopsnobodyreads-site`) holds the rendered site, including:
 - `styles.css` — component patterns, CSS tokens, type scale math, layout systems, interactive behaviors
 - The actual homepage and segment page HTML
+
+Image generation is handled separately via Replicate (Seedream 4.5). Claude Design produces the site's UI and CSS; it does not generate the conceptual illustrations themselves.
 
 DESIGN.md (this file) consolidates what an AI needs for fast lookup on brand intent and copy. The other files in this directory preserve the reasoning that produced each decision. The implementation repo holds the canonical rendering.
