@@ -45,6 +45,14 @@ You have no clients yet. Do NOT fabricate one. Honesty is the whole brand. The t
 >
 > (Owner gets the **demo link**. Gatekeeper gets the **website / a handoff** — different jobs. With a gatekeeper you're getting *past* her, not closing her.)
 
+## VOICEMAIL (only if you want tomorrow's redial slightly warmer)
+
+Cold-call voicemails almost never get returned — so this is NOT a callback play. Its only job is to make your name not-brand-new when you redial and a human picks up ("Hi, this is Sean — I left you a message yesterday"). Skip it if it's draining momentum. If you leave one, keep it to two sentences, no pitch, no ask:
+
+> Hi, this is Sean — I build custom onboarding for trade contractors here in Chicago. Just wanted to reach whoever handles new-hire training — I'll try you again tomorrow.
+
+Name, what you do, you'll call back. That's it. Save the 15-minute ask for the live human.
+
 ## WHAT NOT TO SAY
 
 - AI. Blockchain. Audit trail. Cryptographic. SCORM. LMS. None of these on call one.
