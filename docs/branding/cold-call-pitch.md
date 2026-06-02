@@ -1,51 +1,73 @@
 # Cold Call — SOPs Nobody Reads
 
-## The pitch
+## THE OPENER (say it slower than feels natural)
 
-> I build custom onboarding training for trade contractors. You give me your procedures, I turn them into a module your new hires actually finish.
+> Morning, this is Sean. I build custom onboarding for trade contractors. I take your procedures and turn them into modules a new hire works through on their own. Worth fifteen minutes to see if it's a fit?
 
-Two sentences. Says what it does. No jargon. Recognizable problem (onboarding), recognizable inputs (procedures), recognizable outcome (new hires finish it).
+Two breaths. Beat 1 = what you do ("onboarding," "trade contractors" — tells him you know who he is). Beat 2 = the mechanism + the ask. Ends on "a fit" — clean, no costume words, nothing left hanging.
 
-## Why this works
+**Refinements that are locked (don't re-litigate these mid-call):**
+- "Courses/onboarding" up top, "modules" as the how. Not "training" — "training" makes him think you show up and teach his guys. You make the materials; he keeps running his shop.
+- Ends on "works through on their own" = self-sufficiency, the thing he wants. The senior-guy-pulled-off-the-line pain is saved for discovery, not the opener.
+- No "your shop" / no trying to sound like one of the guys. Honesty is the position; borrowed-costume words break it.
 
-- **"Trade contractors" in the opening line** tells them you're not running a generic list. They register you know who they are before they decide whether to hang up.
-- **"Onboarding" is novel.** Contractors get pitched safety training constantly. They don't get pitched onboarding. The word buys you novelty and slips past the usual shutdown.
-- **"Your procedures"** puts their authority at the center. You're not the source of safety knowledge. They are. You're the transmission.
-- **"New hires actually finish it"** is the specific outcome. Not "engaging" or "interactive" — those are buzzwords. *Finish it* is the thing contractors actually want and never get.
-
-## What not to say
-
-- AI. Blockchain. Audit trail. Cryptographic. SCORM. LMS. None of these on the first call.
-- Three adjectives in a row ("visual, engaging, and interactive"). Three adjectives = marketing copy = tune out.
-- "Compliance" or "safety best practices" — implies you're claiming expertise you don't have.
-- "Solution" or "platform." You're a person doing the work, not software.
-
-## If they push back
-
-**"We don't do much onboarding" / "We're not hiring":**
-
-> Got it. Onboarding is where I usually start, but the same approach works for any procedures you want to make sure your crews actually know. Toolbox topics, equipment-specific stuff, anything written down that isn't landing.
-
-**"What makes you different from ClickSafety?":**
-
-> They sell libraries of generic videos. I build training from your own procedures. Yours, not stock footage of someone else's shop.
-
-**"What's it cost?":**
-
-> A pilot module is $3,500. We'd start with one topic, see if it works for your shop, go from there.
-
-**"Send me information":**
-
-> Sure. The fastest way to see what I do is a 10-minute demo — built from a real contractor's actual procedures. Worth more than a brochure. Want me to send the link?
-
-## The only ask on the first call
+## THE ONLY ASK ON CALL ONE — and what the 15 min actually IS
 
 > Worth a 15-minute call? I'd ask four questions about how you onboard right now and where the gaps are. If it's a fit, I'll tell you. If it's not, I'll tell you that too.
 
-The 15 minutes is the only thing you're trying to close on the first call. Not the pilot. Not the demo. The 15-minute follow-up.
+**The 15 minutes is a second, scheduled PHONE call.** Not a meeting, not video, not him driving anywhere. That's why it's an easy yes. If he asks "what do you mean, a call?":
 
-## Mechanical notes
+> Exactly that — I'd call you back at a time that works, ask four quick questions about how you bring new guys up to speed, and tell you straight whether I can help. Fifteen minutes, no pitch deck, no meeting.
 
-- First call of a session is always the worst one. Rush is normal. It smooths out by call three.
-- Don't extend the call past two minutes unless he's asking questions. If he's quiet, ask for the 15-minute follow-up and get off.
-- If he says no, ask one thing: *Mind if I ask what made it a no? It helps me know who to call and who not to.* Some of them will tell you, and the answer is useful.
+The 15 is the ONLY thing you close on call one. Not the pilot. Not the demo. The follow-up call.
+
+## IF HE ASKS "WHO HAVE YOU DONE THIS FOR?" — the honest answer
+
+You have no clients yet. Do NOT fabricate one. Honesty is the whole brand. The true answer is also the stronger one:
+
+> I'm just getting started in Chicago — you'd be one of my first shops, which is why I'd build you a pilot at $3,500 instead of full freight. The fastest way to see it is a demo I built from a real contractor's procedures.
+
+"Just getting started" signals hungry, will-answer-the-phone, won't-vanish-into-a-call-center — a selling point to a guy burned by big vendors. Your proof is the **demo (the LOTO module)**, which is real. Show the thing you actually built.
+
+## IF THEY PUSH BACK
+
+**"We don't do much onboarding" / "We're not hiring":**
+> Got it. Onboarding is where I usually start, but the same approach works for any procedures you want crews to actually know. Toolbox topics, equipment-specific stuff, anything written down that isn't landing.
+
+**"What makes you different from ClickSafety?":**
+> They sell libraries of generic videos. I build training from your own procedures. Yours, not stock footage of someone else's shop.
+
+**"What's it cost?":**
+> A pilot module is $3,500. We'd start with one topic, see if it works, go from there.
+
+**"Send me information":**
+> Sure. The fastest way to see what I do is a 10-minute demo — built from a real contractor's actual procedures. Worth more than a brochure. Want me to send the link?
+>
+> (Owner gets the **demo link**. Gatekeeper gets the **website / a handoff** — different jobs. With a gatekeeper you're getting *past* her, not closing her.)
+
+## WHAT NOT TO SAY
+
+- AI. Blockchain. Audit trail. Cryptographic. SCORM. LMS. None of these on call one.
+- Three adjectives in a row ("visual, engaging, and interactive") = marketing copy = tune out.
+- "Compliance" / "safety best practices" — implies expertise you're not claiming.
+- "Solution" / "platform." You're a person doing the work, not software.
+
+## IF HE SAYS NO — ask one thing
+
+> Mind if I ask what made it a no? It helps me know who to call and who not to.
+
+Some will tell you. The answer goes in the Notes column — that's lead intelligence, not just scratch.
+
+## MECHANICAL NOTES
+
+- First call of a session is always the worst one. Rush is normal. It smooths by call three. **The fix for rushing is to slow down ~10%, not to calm down** — the mic (and the contractor) can't understand you faster than a distracted man on a job site can.
+- Don't run past two minutes unless he's asking questions. If he's quiet, ask for the 15 and get off.
+- Stand up and walk while you talk — moving lets the nerves move through instead of jamming.
+- The only metric on a hard morning is *dials in the block*, not bookings. You can't control who picks up. You can control the dial.
+
+## NIGHT-BEFORE PREP (kills the morning scramble)
+
+- Kettle out, mug + tea bag ready.
+- Eggs boiled / breakfast prepped.
+- **This script pulled up and open** — the single biggest morning friction point.
+- In bed by 8pm. Short sleep visibly raises the morning emotional load and shrinks the block.
