@@ -23,12 +23,15 @@ Produce tomorrow's cold-call list so the morning never starts with an empty shel
 - **Distributors, wholesalers, 3PLs, staffing agencies** mislabeled as manufacturing.
 - **Anything with no phone number in the listing.** Every number must trace to the listing — numbers are never inferred, reconstructed, or pulled from memory. A lead without a listed number is a skip, not a research project.
 
-## Size and quality proxies (Maps has no employee counts — triangulate, max 2 minutes per lead)
+## Size verification (updated 2026-07-09 — field feedback)
 
-- Review count roughly 3–60: enough to be real, few enough to be SMB. Zero reviews = higher dead-number risk; 200+ = probably too big or consumer-facing.
-- Single location. "Family owned," "since 19XX," founder names on the website — all good signs.
-- A modest, slightly dated website is a *positive* signal for this buyer. A slick multi-location site with a careers portal is a size red flag.
-- Recent reviews or photos (≤ ~12 months) — best available proxy that the line is live. **Known limitation: no listing data can verify a phone line. Expect some dead numbers anyway; the only real test is a ring.**
+**Confirmed limitation: Places/Maps has no headcount data.** The stocking Claude cannot verify size from the listing alone, and the first week's field results suggest the list may have skewed large (see field log). Size is therefore verified per keep, not assumed:
+
+1. **Every keep gets a 30-second size check** — the company's LinkedIn page employee range if trivially findable, or the website's About/Careers pages. Do not exceed 30 seconds; this is triage, not research.
+2. **Instant skips regardless of other signals:** a careers portal with multiple open salaried roles; multiple locations; "divisions" or "our facilities" language; national/global shipping claims front and center; membership in a corporate family.
+3. **Positive SMB signals:** single location; founder or family names on the site; "since 19XX"; a modest, slightly dated website; the owner's name in reviews.
+4. **Review-count band tightened to roughly 3–40** (from 3–60). Above ~40 reviews, treat as a size flag requiring the LinkedIn check to pass explicitly.
+5. **Every row gets a size-confidence column: H / M / L.** L-confidence keeps are allowed but sit at the bottom of the list, never in the seal-breaker slot. Sean's morning skim weighs them last.
 
 ## Method
 
@@ -40,19 +43,25 @@ Google Maps queries, worked corridor by corridor. Example query set (vary the co
 - `CNC machining Wood Dale IL`
 - `tool and die Melrose Park IL`
 
-For each candidate: check category, review count/recency, website in one glance, apply exclusions, keep or skip. When uncertain, **keep with a `?` flag** — uncertain rows are Sean's 30-second morning skim, not the model's silent judgment call.
+For each candidate: check category, review count/recency, website in one glance, apply exclusions, run the size check, keep or skip. When uncertain, **keep with a `?` flag** — uncertain rows are Sean's 30-second morning skim, not the model's silent judgment call.
 
 ## Output format (tracker-ready)
 
 12–15 keeps, as a table:
 
-| # | Company | Phone | City | Category | Size proxy | Note |
+| # | Company | Phone | City | Category | Size conf. | Note |
 |---|---------|-------|------|----------|-----------|------|
 
-- **Row 1 is the seal-breaker:** the lowest-stakes keep on the list (smallest shop, least-ideal fit) — per the runbook, the first dial exists to break the seal, not to win.
+- **Row 1 is the seal-breaker:** the lowest-stakes keep on the list (smallest shop, least-ideal fit) — per the runbook, the first dial exists to break the seal, not to win. Never an L-confidence row.
 - Notes are one line: anything useful for the call ("family owned since '82", "reviews mention fast turnaround", "? — might be distributor").
 - Times: leads are Central Time; Sean dials from Mountain Time. No best-window research needed — SMB shops answer during business hours.
 
 ## Definition of done
 
 The table above, plus a three-line summary: queries run, kept / skipped / flagged counts, and any pattern noticed ("Bensenville plastics heavily consolidated — mostly big players"). Nothing else. **Never contact anyone — no calls, no emails, no form fills. This task produces a list; humans do the talking.**
+
+---
+
+## Field log
+
+- **2026-07-09:** Six of six live conversations in one block reported an internal person handling training — a marker associated with shops above the 150 ceiling per the field notes, or a polite deflection; disambiguation probe lives in the call script, size verification lives here. Stocking Claude confirmed Places exposes no headcount. Result: size-verification section added, review band tightened, size-confidence column introduced.
