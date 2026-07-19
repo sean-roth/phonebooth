@@ -66,7 +66,7 @@ is worth a call.
 - Demo: a real module built from an OSHA lockout/tagout procedure
   (29 CFR 1910.147), at sopsnobodyreads.com/demo. A client's module is built
   from THEIR procedures.
-- Price: $3,500 pilot, one module, delivered in ~one week.
+- Price: $3,500 pilot, one module, delivered in ~two weeks.
 - Voice: plain, short sentences (many owners speak English as a second
   language). Say "onboarding"/"module," never "training" (implies Sean teaches
   the staff). Never say AI, blockchain, SCORM, LMS, "compliance," "platform,"
