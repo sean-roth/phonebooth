@@ -23,20 +23,25 @@ def _city_state(address: str) -> str:
 def run():
     conn = dedup.connect()
     keepers, review = [], []
-    slices_worked = 0
+    productive = 0   # slices that yielded callable leads — the run target
+    attempted = 0    # every slice actually swept — bounds Maps spend
 
     for metro, corridor, category, query, slice_id in slices.all_slices():
-        if slices_worked >= SLICES_PER_RUN:
+        # Target SLICES_PER_RUN productive slices, but cap total sweeps so a
+        # dead stretch of the queue can't burn unlimited Maps calls in one run.
+        if productive >= SLICES_PER_RUN or attempted >= SLICES_PER_RUN * 3:
             break
         if dedup.slice_done(conn, slice_id):
             continue
+        attempted += 1
 
         candidates = maps.search(query, MAX_PER_SLICE)
         if not candidates:
-            dedup.mark_slice(conn, slice_id, "worked-out")
+            # Empty is not the same as mined out — it may be a bad query or a
+            # Places hiccup. Park it; slice_done frees it after the rest window.
+            dedup.mark_slice(conn, slice_id, "empty")
             continue
 
-        slices_worked += 1
         dropped = 0  # dupes + no-phone + rejects + dead numbers
 
         for lead in candidates:
@@ -50,7 +55,13 @@ def run():
                 dropped += 1
                 continue
 
-            verdict = qualify.qualify(lead)
+            try:
+                verdict = qualify.qualify(lead)
+            except Exception as e:
+                # One bad API call must not kill the run mid-slice with
+                # unsaved keepers. The lead goes to the human queue instead.
+                verdict = {"decision": "review", "confidence": "L",
+                           "note": f"qualify failed ({type(e).__name__}) - judge by hand"}
             dedup.record(conn, lead, slice_id, verdict["decision"], verdict["confidence"])
             if verdict["decision"] == "reject":
                 dropped += 1
@@ -66,6 +77,8 @@ def run():
 
         # A slice that came back mostly dupes/rejects is mined out.
         result = "worked-out" if dropped / len(candidates) >= WORKED_OUT_RATIO else "productive"
+        if result == "productive":
+            productive += 1
         dedup.mark_slice(conn, slice_id, result)
 
     # Order keepers H -> M -> L.
@@ -75,7 +88,8 @@ def run():
     csv_path = sink.write_csv(keepers, review)
     sink.append_sheet(keepers, review)
 
-    print(f"Done. {len(keepers)} callable leads, {len(review)} to review.")
+    print(f"Done. {len(keepers)} callable leads, {len(review)} to review "
+          f"({productive} productive slices, {attempted} swept).")
     print(f"CSV: {csv_path}")
 
 

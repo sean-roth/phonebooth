@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS seen_leads (
     city_state    TEXT,
     category      TEXT,              -- the sweep category it came from
     slice         TEXT,              -- "metro x corridor x category"
-    decision      TEXT,              -- keep | reject (from qualification)
+    decision      TEXT,              -- keep | reject | review (from qualification)
     confidence    TEXT,              -- H | M | L
     number_status TEXT,              -- unknown | valid | dead (from lookup)
     first_seen    TEXT DEFAULT (date('now'))
@@ -22,9 +22,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_seen_phone ON seen_leads(phone_digits);
 CREATE INDEX IF NOT EXISTS idx_seen_namezip ON seen_leads(name_key, zip);
 
 -- Log of which slices have been swept, so the human/agent knows what territory
--- is mined out.
+-- is mined out. Worked-out and empty slices rest for REVISIT_AFTER_DAYS
+-- (config.py), then become sweepable again.
 CREATE TABLE IF NOT EXISTS swept_slices (
     slice       TEXT PRIMARY KEY,    -- "metro x corridor x category"
     last_swept  TEXT DEFAULT (date('now')),
-    result      TEXT                 -- "productive" | "worked-out"
+    result      TEXT                 -- "productive" | "worked-out" | "empty"
 );

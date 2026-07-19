@@ -23,8 +23,9 @@ pip install -r requirements.txt
 | `ANTHROPIC_API_KEY` | the qualification calls |
 | `QUALIFY_MODEL` | your current Sonnet model string (default `claude-sonnet-5`) |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` | Lookup; optional (scrub is skipped if unset) |
-| `SLICES_PER_RUN` | corridor×category slices per run (default 6) |
+| `SLICES_PER_RUN` | productive corridor×category slices per run (default 6) |
 | `MAX_PER_SLICE` | Maps results per slice (default 10) |
+| `REVISIT_AFTER_DAYS` | rest window before a worked-out/empty slice is sweepable again (default 180) |
 | Sheets (optional) | `SHEETS_ENABLED=true`, `SHEETS_SPREADSHEET_ID`, `SHEETS_WORKSHEET`, `GOOGLE_SERVICE_ACCOUNT_JSON` |
 
 Without Sheets configured it always writes `output/leads-YYYY-MM-DD.csv`, which
@@ -34,15 +35,22 @@ you paste into your tracker — same as the manual batches.
 ```
 python run.py
 ```
-Each run advances through the sweep queue, skips slices already marked
-worked-out, and stops after `SLICES_PER_RUN` productive slices. State (seen
-leads, worked-out slices) lives in the SQLite DB from `../data/schema.sql`.
+Each run advances through the sweep queue, skips slices marked worked-out or
+empty within the last `REVISIT_AFTER_DAYS`, and stops after `SLICES_PER_RUN`
+productive slices (hard cap: 3× that on total sweeps, so a dead stretch of the
+queue can't burn unlimited Maps calls). A failed qualification call routes that
+lead to the review pile instead of killing the run. State (seen leads, swept
+slices) lives in the SQLite DB from `../data/schema.sql`.
+
+Qualification decisions: `keep` (callable, H/M/L ordered), `reject` (dropped,
+remembered), `review` (a genuine judgment call — goes to the review tab/section
+for a human, never to the callable list).
 
 ## Modules
 - `config.py` — env/config
 - `slices.py` — the sweep queue (edit to expand territory; mirrors `sweep-matrix.md`)
 - `maps.py` — Places API (New) text search + field mask
-- `dedup.py` — SQLite seen-leads + swept-slices
+- `dedup.py` — SQLite seen-leads + swept-slices (with the re-sweep rest window)
 - `qualify.py` — Sonnet per-lead qualification (loads the committed prompt)
 - `scrub.py` — Twilio Lookup
 - `sink.py` — CSV writer + optional Google Sheets append
@@ -53,10 +61,16 @@ leads, worked-out slices) lives in the SQLite DB from `../data/schema.sql`.
   priciest field in the mask — drop it from `maps.FIELD_MASK` to cut cost
   (qualification loses some signal, e.g. owner names / auto-shop tells).
 - Sonnet: one short call per surviving lead; cents per hundred leads.
+  (Sonnet 5 note: `effort` defaults to high on the API — low is plenty for a
+  keep/reject judgment and cuts latency/cost, if the installed SDK supports
+  setting it.)
 - Twilio Lookup: fractions of a cent per number.
 
 ## Where Claude Code should extend
-- Rate-limit handling / retries on the Maps and Anthropic calls.
+- Retries/backoff on the Maps and Anthropic calls. (An errored qualify already
+  falls through to review; an errored Maps call still ends the run.)
+- Seed the dedup DB from the existing tracker before the first real run, so
+  hand-built batches aren't re-sourced as duplicates.
 - Batch qualification (multiple leads per Sonnet call) if volume climbs.
 - Firecrawl size-check on H-tier leads before output (see SKILL.md).
 - A CLI (choose metro, dry-run, slice range) and a scheduled cron entry.

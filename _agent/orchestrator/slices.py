@@ -1,5 +1,6 @@
 """The sweep queue: metro x corridor x category, Chicago first then Detroit.
-Mirrors ../skills/leads/sweep-matrix.md. Edit the lists to expand territory."""
+Mirrors ../skills/leads/sweep-matrix.md in full — the matrix is the map, this
+is the queue. When territory changes, change both in the same commit."""
 
 CATEGORIES = [
     "machine shop",
@@ -15,21 +16,44 @@ CATEGORIES = [
     "precision grinding manufacturer",
     "powder coating metal finishing",
     "food processing",
+    "food packaging",
+    "welding fabrication",
 ]
 
-# metro -> list of corridors ("City ST")
+# metro -> list of corridors ("City ST"). List order = work order in the metro.
 METROS = {
     "Chicago": [
+        # O'Hare / Elk Grove belt
         "Elk Grove Village IL", "Bensenville IL", "Wood Dale IL", "Addison IL",
+        "Itasca IL",
+        # Near-west inner ring
         "Franklin Park IL", "Schiller Park IL", "Melrose Park IL", "Northlake IL",
-        "Bedford Park IL", "Cicero IL", "Bridgeview IL", "Alsip IL",
-        "Des Plaines IL", "Mount Prospect IL", "Elgin IL", "Carol Stream IL",
+        "Stone Park IL", "Bellwood IL",
+        # South / southwest corridor
+        "Broadview IL", "Hillside IL", "Bedford Park IL", "McCook IL",
+        "Summit IL", "Cicero IL", "Berwyn IL", "Alsip IL", "Bridgeview IL",
+        # North / northwest suburbs
+        "Des Plaines IL", "Mount Prospect IL", "Arlington Heights IL",
+        "Niles IL", "Skokie IL", "Morton Grove IL",
+        # Far west
+        "Elgin IL", "South Elgin IL", "Carol Stream IL", "Bloomingdale IL",
+        "Glendale Heights IL",
+        # Chicago city industrial
+        "Clearing Chicago IL", "Archer Heights Chicago IL", "Pilsen Chicago IL",
+        "Ravenswood Chicago IL",
     ],
     "Detroit": [
-        "Warren MI", "Sterling Heights MI", "Roseville MI", "Clinton Township MI",
-        "Madison Heights MI", "Troy MI", "Auburn Hills MI", "Livonia MI",
-        "Plymouth MI", "Canton MI", "Redford MI", "Taylor MI", "Dearborn MI",
-        "Wyandotte MI", "Farmington Hills MI", "Novi MI",
+        # Macomb supplier belt
+        "Warren MI", "Sterling Heights MI", "Center Line MI", "Roseville MI",
+        "Fraser MI", "Clinton Township MI",
+        # Oakland inner ring
+        "Madison Heights MI", "Hazel Park MI", "Ferndale MI",
+        # Oakland north / west
+        "Troy MI", "Auburn Hills MI", "Rochester Hills MI",
+        "Farmington Hills MI", "Novi MI", "Wixom MI",
+        # Wayne belt
+        "Livonia MI", "Plymouth MI", "Canton MI", "Redford MI", "Romulus MI",
+        "Taylor MI", "Dearborn MI", "Wyandotte MI",
     ],
 }
 

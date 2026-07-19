@@ -12,8 +12,9 @@ this for the industrial heartland he is from.
 
 ## The funnel
 Source (this agent) -> cold call -> discovery (4 questions) -> $3,500 pilot ->
-build & deliver (~1 week) -> paid -> expand. Full call scripts and the
-after-the-yes runbook are in `docs/` and in Google Drive.
+build & deliver (~2 weeks) -> paid -> expand. The decision-maker call doctrine
+(opener, two-gear discovery, the four questions) is `dm-call-script.md`; the
+after-the-yes runbook is in `docs/` and Google Drive.
 
 ## What six months taught us (don't relearn these the hard way)
 - Channel: calling beats cold email and LinkedIn for this segment. Email and
@@ -35,12 +36,14 @@ after-the-yes runbook are in `docs/` and in Google Drive.
   they're the buyer.
 
 ## Calling infrastructure (constraints that shape strategy)
-- One Chicago number (Mint) covers the whole Midwest coherently. Number rotation
-  (via a VoIP line) will be needed at volume to avoid spam-flagging.
-- Internet is Starlink with bad jitter and can't be wired to the calling
-  machine. Therefore: cold dials over VoIP (low stakes), but REAL discovery
-  calls go native cellular on the Mint line, off the internet, so audio never
-  degrades on the call that matters.
+- One number for everything: cold dials AND discovery calls go out on the Mint
+  cellular number. A single Chicago number reads as a coherent regional
+  business across the whole Midwest, and native cellular keeps every call off
+  the Starlink connection (bad jitter, can't be wired to the calling machine).
+- At volume, watch the Mint line for "Spam Likely" labeling — that is the
+  trigger for a VoIP + number-rotation layer, not before. Registering the
+  number with the free caller registries (First Orion, TNS, Hiya) lowers the
+  mislabeling risk in the meantime.
 
 ## Current state (update this as it changes)
 - Territory: Chicago metro first, then Detroit. (See `skills/leads/sweep-matrix.md`.)
@@ -50,6 +53,7 @@ after-the-yes runbook are in `docs/` and in Google Drive.
   `skills/leads/`.
 
 ## Pointers
+- Decision-maker call doctrine: `dm-call-script.md`
 - Governing ICP & exclusions: `docs/sales/lead-generation-guide.md`
 - Product/voice facts: "SOPs — Canonical Facts" (Google Drive)
 - Call scripts, runbook: `docs/` + Google Drive

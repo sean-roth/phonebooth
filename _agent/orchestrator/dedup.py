@@ -5,7 +5,7 @@ without it, duplicates drown the pipeline within a few weeks. Rejects are
 remembered too, so the same non-fit shop is not re-qualified every run."""
 import re
 import sqlite3
-from config import DB_PATH, SCHEMA_PATH
+from config import DB_PATH, SCHEMA_PATH, REVISIT_AFTER_DAYS
 
 
 def _digits(phone: str) -> str:
@@ -59,9 +59,16 @@ def mark_number(conn, phone: str, status: str):
 
 
 def slice_done(conn, slice_id: str) -> bool:
+    """True while a slice sits inside its rest window.
+
+    Worked-out (mostly dupes/rejects) and empty (no Maps results) slices are
+    skipped for REVISIT_AFTER_DAYS, then become eligible again — new shops
+    appear, and the seen-leads store keeps old ones from re-listing."""
     return conn.execute(
-        "SELECT 1 FROM swept_slices WHERE slice = ? AND result = 'worked-out'",
-        (slice_id,),
+        "SELECT 1 FROM swept_slices WHERE slice = ? "
+        "AND result IN ('worked-out', 'empty') "
+        "AND last_swept > date('now', '-' || ? || ' days')",
+        (slice_id, REVISIT_AFTER_DAYS),
     ).fetchone() is not None
 
 

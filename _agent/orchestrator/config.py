@@ -29,6 +29,7 @@ OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", AGENT_DIR / "orchestrator" / "output")
 SLICES_PER_RUN = int(os.getenv("SLICES_PER_RUN", "6"))       # productive slices per run
 MAX_PER_SLICE = int(os.getenv("MAX_PER_SLICE", "10"))        # Maps results per slice query
 WORKED_OUT_RATIO = float(os.getenv("WORKED_OUT_RATIO", "0.8"))  # >= this share dupes/rejects -> worked-out
+REVISIT_AFTER_DAYS = int(os.getenv("REVISIT_AFTER_DAYS", "180"))  # worked-out/empty slices become sweepable again after this
 
 # --- Google Sheets (optional; a dated CSV is always written) ---
 SHEETS_ENABLED = os.getenv("SHEETS_ENABLED", "false").lower() == "true"

@@ -62,9 +62,9 @@ with HIS OWN words as the reason:
 
 Gear 1's job is not fit/no-fit. It is to earn the fifteen.
 
-Line-quality note: gear 1 happens on whatever line the cold dial is on. If
-the VoIP jitter is audible that day, don't run gear 1 — book the fifteen and
-run it native cellular on the Mint line, per the infrastructure rule.
+Line note: everything — cold dials and discovery — goes out on the Mint
+cellular number, so gear 1 runs on the same audio as the fifteen. No line to
+switch. If he's talking, take the minutes.
 
 ### Gear 2 — the fifteen minutes, scheduled or granted
 All four questions in full. Ends the way
@@ -115,12 +115,12 @@ before reproducing it.
 
 ## After the four
 Fit: "Here's what I think would work for you. The pilot is one module, built
-from [the thing he named in Q3], $3,500." Not a fit: say so, and say why.
-Pricing detail and the after-the-yes runbook live in `docs/` and Drive —
-this script ends at the yes.
+from [the thing he named in Q3], $3,500, delivered in about two weeks." Not
+a fit: say so, and say why. Pricing detail and the after-the-yes runbook
+live in `docs/` and Drive — this script ends at the yes.
 
 ## What did NOT change
 The gatekeeper approach — it works; leave it alone. The demo
 (sopsnobodyreads.com/demo) as proof. "One of my first customers" as the
-reason for the pilot price. Real discovery calls go native cellular on the
-Mint line, never VoIP.
+reason for the pilot price. One number for everything: the Mint cellular
+line is the outreach identity, cold and discovery alike.
