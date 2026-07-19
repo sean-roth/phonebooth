@@ -35,10 +35,12 @@ live Google Sheet. Set genuinely ambiguous ones aside for a human.
    optional — a lead with no phone is dropped.
 3. **Dedup.** Check each candidate's normalized phone (and name+ZIP) against the
    seen-leads store (`../../data/`, see its README). Drop anything already seen.
-   Insert survivors into the store.
+   Insert survivors into the store. (First run ever: seed the store from the
+   hand-built tracker batches first — `../../orchestrator/seed.py`.)
 4. **Qualify.** Send survivors to Sonnet using `qualification-prompt.md` as the
-   system prompt. Per lead you get: keep/reject, H/M/L, one-line note. Drop
-   rejects.
+   system prompt. Per lead you get: keep, reject, or review, plus H/M/L and a
+   one-line note. Drop rejects; review goes to the human queue, never the
+   callable list.
 5. **Scrub numbers.** Run keeper phones through Lookup; drop/flag dead lines.
 6. **Deliver.** Append keepers to the Google Sheet in `output-format.md` order,
    H-tier first. Put anything the model marked ambiguous in a "review" tab, not

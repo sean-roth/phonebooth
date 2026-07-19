@@ -31,6 +31,19 @@ pip install -r requirements.txt
 Without Sheets configured it always writes `output/leads-YYYY-MM-DD.csv`, which
 you paste into your tracker — same as the manual batches.
 
+## First run
+1. **Seed the dedup store** from the existing tracker so hand-built batches
+   aren't re-sourced as fresh leads: export the Sheet tab(s) to CSV, then
+   `python seed.py tracker-export.csv`. Safe to re-run.
+2. **Leave `SHEETS_ENABLED=false` for the first run.** Eyeball the CSV, paste
+   it into the tracker, and confirm the columns line up before turning the
+   append on — `append_sheet` assumes the worksheet's columns match
+   `sink.COLUMNS` in order, and the default tab name is "Manufacturer Leads"
+   (set `SHEETS_WORKSHEET` to the real tab name).
+3. **Expect the review section to be short.** If a whole batch lands in
+   review, something upstream broke — API failures route there by design
+   rather than killing the run.
+
 ## Run
 ```
 python run.py
@@ -39,7 +52,8 @@ Each run advances through the sweep queue, skips slices marked worked-out or
 empty within the last `REVISIT_AFTER_DAYS`, and stops after `SLICES_PER_RUN`
 productive slices (hard cap: 3× that on total sweeps, so a dead stretch of the
 queue can't burn unlimited Maps calls). A failed qualification call routes that
-lead to the review pile instead of killing the run. State (seen leads, swept
+lead to the review pile instead of killing the run; a failed Maps call stops
+the sweep early and delivers what's already gathered. State (seen leads, swept
 slices) lives in the SQLite DB from `../data/schema.sql`.
 
 Qualification decisions: `keep` (callable, H/M/L ordered), `reject` (dropped,
@@ -51,6 +65,7 @@ for a human, never to the callable list).
 - `slices.py` — the sweep queue (edit to expand territory; mirrors `sweep-matrix.md`)
 - `maps.py` — Places API (New) text search + field mask
 - `dedup.py` — SQLite seen-leads + swept-slices (with the re-sweep rest window)
+- `seed.py` — one-time load of hand-built tracker rows into the dedup store
 - `qualify.py` — Sonnet per-lead qualification (loads the committed prompt)
 - `scrub.py` — Twilio Lookup
 - `sink.py` — CSV writer + optional Google Sheets append
@@ -68,9 +83,8 @@ for a human, never to the callable list).
 
 ## Where Claude Code should extend
 - Retries/backoff on the Maps and Anthropic calls. (An errored qualify already
-  falls through to review; an errored Maps call still ends the run.)
-- Seed the dedup DB from the existing tracker before the first real run, so
-  hand-built batches aren't re-sourced as duplicates.
+  falls through to review; an errored Maps call stops the sweep early and
+  delivers what's gathered.)
 - Batch qualification (multiple leads per Sonnet call) if volume climbs.
 - Firecrawl size-check on H-tier leads before output (see SKILL.md).
 - A CLI (choose metro, dry-run, slice range) and a scheduled cron entry.

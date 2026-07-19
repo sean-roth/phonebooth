@@ -22,7 +22,7 @@ def _row(lead: dict, verdict: dict) -> list:
 def write_csv(keepers, review) -> str:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     path = OUTPUT_DIR / f"leads-{date.today().isoformat()}.csv"
-    with path.open("w", newline="") as f:
+    with path.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(COLUMNS)
         for lead, verdict in keepers:

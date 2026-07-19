@@ -35,7 +35,13 @@ def run():
             continue
         attempted += 1
 
-        candidates = maps.search(query, MAX_PER_SLICE)
+        try:
+            candidates = maps.search(query, MAX_PER_SLICE)
+        except Exception as e:
+            # Don't lose the leads already gathered this run — stop sweeping
+            # and deliver them. The slice stays unmarked and retries next run.
+            print(f"Maps error on '{query}' ({type(e).__name__}); stopping sweep early.")
+            break
         if not candidates:
             # Empty is not the same as mined out — it may be a bad query or a
             # Places hiccup. Park it; slice_done frees it after the rest window.

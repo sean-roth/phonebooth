@@ -37,7 +37,10 @@ def qualify(lead: dict) -> dict:
     )
     resp = _client.messages.create(
         model=QUALIFY_MODEL,
-        max_tokens=200,
+        # Sonnet 5 thinks adaptively by default and thinking tokens count
+        # against max_tokens — a 200 budget can truncate before the JSON is
+        # emitted. The actual text output stays tiny either way.
+        max_tokens=1500,
         system=SYSTEM,
         messages=[{"role": "user", "content": user}],
     )
@@ -53,7 +56,7 @@ def _parse(raw: str) -> dict:
     except json.JSONDecodeError:
         obj = {}
     decision = obj.get("decision", "review")
-    if decision not in ("keep", "reject"):
+    if decision not in ("keep", "reject", "review"):
         decision = "review"
     return {
         "decision": decision,
