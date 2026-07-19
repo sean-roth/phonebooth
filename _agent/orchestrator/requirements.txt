@@ -1,0 +1,4 @@
+anthropic>=0.40
+requests>=2.31
+python-dotenv>=1.0
+gspread>=6.0   # optional — only needed for Google Sheets append (SHEETS_ENABLED=true)
