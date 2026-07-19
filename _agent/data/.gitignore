@@ -1,0 +1,9 @@
+# Keep the live dedup DB and working CSVs out of git.
+*.db
+*.sqlite
+*.sqlite3
+seen-leads.csv
+exports/
+
+# Commit periodic snapshots explicitly if you want a backup in git:
+!seen-leads-snapshot-*.csv
