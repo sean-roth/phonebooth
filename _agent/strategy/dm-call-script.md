@@ -24,15 +24,21 @@ say AI, compliance, platform, solution, SCORM, LMS. Peer to peer, craftsman to
 craftsman — no thanks-for-your-time, no vendor posture, never apologize for
 being new.
 
+Words vs beats: the beats below are doctrine; the words are clothing. Saying a
+beat in different words on a given dial is fine — if a variant lands, write
+down what you actually said. "Your floor" passes the cosplay test: the test
+kills membership claims (hi-vis, "we've worked in the field"), not naming his
+workplace from the outside. The luthier says "your music."
+
 ## The opener (~15 seconds, spoken)
 
 > "Morning, this is Sean — I build onboarding courses for manufacturers.
 > Right now, most of how your floor actually runs is in your people's heads,
 > and it clocks out with them at shift change. I sit down with those people —
-> and with you — fold in whatever procedures you've got written down, and
-> turn it into one course the whole crew can check. Four quick questions
-> would tell me if it's a fit: got three minutes now, or is there a better
-> time this week?"
+> and with you — fold in whatever you've got written down, and turn it into
+> the course you hand every new guy. The whole crew ends up using it anyway.
+> Four quick questions would tell me if it's a fit: got three minutes now, or
+> is there a better time this week?"
 
 Beat by beat:
 - **Category first.** He files the caller in five seconds or hangs up.
@@ -42,6 +48,12 @@ Beat by beat:
 - **People before paper.** The order tells him the offer works even if the
   binder is a mess (it usually is) without ever saying so. "And with you"
   makes him a source, not a student. "Whatever" carries the no-judgment.
+- **Wedge, then kicker.** "Onboarding" files him fast and slips the
+  another-safety-vendor shutdown; "the whole crew ends up using it anyway" is
+  the expansion thesis said as a shrug — built for the new guy, used by
+  everybody. Don't collapse the two into either one: narrowing the kicker to
+  new hires amputates the arc, widening the category loses the five-second
+  filing.
 - **The ask offers two yeses.** "Now or later this week" converts better
   than "worth fifteen minutes?", which invites "send me something."
 
@@ -90,6 +102,9 @@ first couple weeks."
 Gear-1 lite: "How do new guys get up to speed right now — who handles it?"
 Listening for: who owns the first week, what materials exist, where it
 breaks, frustrated vs resigned. Frustrated is buying. Resigned isn't yet.
+Also listening for which pain is live: new-guy ramp-up, or veterans doing
+the same job three different ways. Both are fits — they scope different
+pilots. The opener never pre-answers this; these questions exist to ask it.
 
 **2. Trigger — outbound-honest version.** "When I called, did this land on
 something already on your list, or is it the first time it's come up?"
@@ -124,3 +139,10 @@ The gatekeeper approach — it works; leave it alone. The demo
 (sopsnobodyreads.com/demo) as proof. "One of my first customers" as the
 reason for the pilot price. One number for everything: the Mint cellular
 line is the outreach identity, cold and discovery alike.
+
+## Change discipline
+This is v1.1. It is unproven, and editing cannot fix unproven — only dialing
+can. The next word change costs ten dials with the current words: let the
+hang-up points and what actually gets said make the case, not another editing
+session. Log where in the ~15 seconds hang-ups happen; that number decides
+what gets cut next.
