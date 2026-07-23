@@ -1,12 +1,19 @@
 """Output: always write a dated CSV; optionally append to a Google Sheet.
 
 The CSV is the reliable, reviewable artifact (paste into your tracker, same as
-the manual batches). The Sheet append is opt-in (SHEETS_ENABLED=true) and needs
-gspread + a service-account key."""
+the manual batches).
+
+The Sheet append is opt-in (SHEETS_ENABLED=true) and authenticates with
+**OAuth, not a service-account key**: a Workspace-backed Cloud org enforces
+`iam.disableServiceAccountKeyCreation` by default, so the service-account path
+is blocked. OAuth is also the better fit here — you authenticate as yourself,
+there is no key file on disk, and the Sheet does not have to be shared with a
+robot account. See ../FIRST-STEPS.md."""
 import csv
 from datetime import date
 from config import (OUTPUT_DIR, SHEETS_ENABLED, SHEETS_SPREADSHEET_ID,
-                    SHEETS_WORKSHEET, SHEETS_REVIEW_WORKSHEET, GOOGLE_SA_JSON)
+                    SHEETS_WORKSHEET, SHEETS_REVIEW_WORKSHEET,
+                    GSPREAD_CREDENTIALS, GSPREAD_TOKEN)
 
 COLUMNS = ["Source", "Segment", "Company", "Phone", "Region", "Contact",
            "Status", "Last Touch", "Next Touch", "Hiring Cadence #",
@@ -36,11 +43,20 @@ def write_csv(keepers, review) -> str:
 
 
 def append_sheet(keepers, review):
-    """Append to the live Google Sheet. No-op unless SHEETS_ENABLED."""
+    """Append to the live Google Sheet. No-op unless SHEETS_ENABLED.
+
+    First run opens a browser once to authorize, then caches a token and runs
+    unattended after that."""
     if not SHEETS_ENABLED:
         return
     import gspread
-    gc = gspread.service_account(filename=GOOGLE_SA_JSON)
+    # Unset paths -> gspread's own defaults (~/.config/gspread/).
+    kwargs = {}
+    if GSPREAD_CREDENTIALS:
+        kwargs["credentials_filename"] = GSPREAD_CREDENTIALS
+    if GSPREAD_TOKEN:
+        kwargs["authorized_user_filename"] = GSPREAD_TOKEN
+    gc = gspread.oauth(**kwargs)
     sh = gc.open_by_key(SHEETS_SPREADSHEET_ID)
     sh.worksheet(SHEETS_WORKSHEET).append_rows(
         [_row(l, v) for l, v in keepers], value_input_option="USER_ENTERED")
