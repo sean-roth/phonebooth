@@ -32,8 +32,15 @@ WORKED_OUT_RATIO = float(os.getenv("WORKED_OUT_RATIO", "0.8"))  # >= this share 
 REVISIT_AFTER_DAYS = int(os.getenv("REVISIT_AFTER_DAYS", "180"))  # worked-out/empty slices become sweepable again after this
 
 # --- Google Sheets (optional; a dated CSV is always written) ---
+# Auth is OAuth, NOT a service-account key: a Workspace-backed Cloud org
+# enforces iam.disableServiceAccountKeyCreation by default, so key creation is
+# blocked. Create a Desktop-app OAuth client ID in the Cloud console and point
+# GSPREAD_CREDENTIALS at the downloaded client-secrets JSON. Leave both paths
+# unset to use gspread's defaults (~/.config/gspread/credentials.json and
+# authorized_user.json). The token file is created on first authorization.
 SHEETS_ENABLED = os.getenv("SHEETS_ENABLED", "false").lower() == "true"
 SHEETS_SPREADSHEET_ID = os.getenv("SHEETS_SPREADSHEET_ID", "")
 SHEETS_WORKSHEET = os.getenv("SHEETS_WORKSHEET", "Manufacturer Leads")
 SHEETS_REVIEW_WORKSHEET = os.getenv("SHEETS_REVIEW_WORKSHEET", "Review")
-GOOGLE_SA_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")  # path to service-account key file
+GSPREAD_CREDENTIALS = os.getenv("GSPREAD_CREDENTIALS", "")   # OAuth client-secrets JSON
+GSPREAD_TOKEN = os.getenv("GSPREAD_TOKEN", "")               # cached token (auto-created)
