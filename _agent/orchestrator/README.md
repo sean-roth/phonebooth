@@ -26,7 +26,8 @@ pip install -r requirements.txt
 | `SLICES_PER_RUN` | productive corridor×category slices per run (default 6) |
 | `MAX_PER_SLICE` | Maps results per slice (default 10) |
 | `REVISIT_AFTER_DAYS` | rest window before a worked-out/empty slice is sweepable again (default 180) |
-| Sheets (optional) | `SHEETS_ENABLED=true`, `SHEETS_SPREADSHEET_ID`, `SHEETS_WORKSHEET`, `GOOGLE_SERVICE_ACCOUNT_JSON` |
+| Sheets (optional) | `SHEETS_ENABLED=true`, `SHEETS_SPREADSHEET_ID`, `SHEETS_WORKSHEET`, `SHEETS_REVIEW_WORKSHEET` |
+| Sheets auth | **OAuth, not a service-account key** — `GSPREAD_CREDENTIALS` (Desktop-app client-secrets JSON), `GSPREAD_TOKEN` (cached token). Leave both unset to use gspread's defaults. |
 
 Without Sheets configured it always writes `output/leads-YYYY-MM-DD.csv`, which
 you paste into your tracker — same as the manual batches.
@@ -68,13 +69,25 @@ for a human, never to the callable list).
 - `seed.py` — one-time load of hand-built tracker rows into the dedup store
 - `qualify.py` — Sonnet per-lead qualification (loads the committed prompt)
 - `scrub.py` — Twilio Lookup
-- `sink.py` — CSV writer + optional Google Sheets append
+- `sink.py` — CSV writer + optional Google Sheets append (OAuth)
 - `run.py` — the orchestrator loop
 
 ## Cost notes
-- Maps: within the monthly free credit at this volume. `reviews.text` is the
-  priciest field in the mask — drop it from `maps.FIELD_MASK` to cut cost
-  (qualification loses some signal, e.g. owner names / auto-shop tells).
+- **Maps: ~1,000 free searches/month, not 10,000.** Google bills per SKU and
+  charges at the highest tier any requested field belongs to. The field mask
+  requests `nationalPhoneNumber`, `websiteUri`, `rating`, `userRatingCount`,
+  and `regularOpeningHours` — all of which trigger **Text Search Enterprise** —
+  plus `reviews`, which pushes it to **Enterprise + Atmosphere**. Enterprise
+  SKUs get 1K free calls/month; the advertised 10K is the Essentials figure.
+  One search = one billable call returning up to 20 businesses, so ~6 slices a
+  run, daily, is ~180 calls/month. Comfortably free.
+- **Do NOT drop `reviews.text` to save money.** Dropping it moves the request
+  from Enterprise + Atmosphere down to Enterprise — *still the same 1K bucket*,
+  because `nationalPhoneNumber` alone triggers Enterprise and there is no call
+  list without phone numbers. You would lose the single best qualification
+  signal (owner names, B2B-vs-consumer tells) for zero saving at this volume.
+- Set a **daily quota cap** on Places API in the Cloud console. A billing
+  budget only alerts after the fact; the quota is the actual hard stop.
 - Sonnet: one short call per surviving lead; cents per hundred leads.
   (Sonnet 5 note: `effort` defaults to high on the API — low is plenty for a
   keep/reject judgment and cuts latency/cost, if the installed SDK supports
