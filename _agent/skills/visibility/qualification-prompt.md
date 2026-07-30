@@ -51,22 +51,54 @@ this makes the cap auditable rather than a number you have to trust.
 
 ### PROFILE_SUBSCORE — uncapped, the primary driver
 
-Start at zero.
+**Every signal below must first be declared in the `signals` object** (see
+Output) as exactly one of `present`, `absent`, or `unknown` — before you
+compute any points. Then score strictly from that declaration:
 
-| Signal | Points |
+- `absent` → award the signal's points.
+- `present` or `unknown` → award zero. **No exceptions.** A signal you are
+  not confident calling `absent` is `unknown`, not `absent` — guessing in
+  the scoring direction is exactly the failure this structure exists to
+  prevent. (An earlier version of this prompt scored profile completeness
+  from prose instructions alone — "if a field was not returned, treat it as
+  unknown, not absent" — and two visibly identical leads, both missing the
+  same fields, scored 35 and 80 on the same run. The fix is this object:
+  scoring is a lookup against a declaration you already committed to, not a
+  judgment call made at scoring time.)
+
+If the payload states a field was **not returned by Places**, that signal is
+`unknown` — never infer `absent` from an unreturned field, no matter how the
+business's `types` or name reads.
+
+| Signal | Points when `absent` |
 |---|---|
-| Primary category generic ("Contractor", "Service") rather than the trade | 35 |
-| Photos array not full — see note below | 25 |
-| No services listed | 15 |
-| No business description | 15 |
-| No hours set | 10 |
-| No posts in 90 days | 5 |
+| `primary_category_specific` — primary type is a specific trade, not a generic bucket like "Contractor" or "Service" | 35 |
+| `photos_full` — profile has a substantial photo array | 25 |
+| `services_listed` — services are listed on the profile | 15 |
+| `business_description` — profile has a business description | 15 |
+| `hours_set` — business hours are set | 10 |
+| `posts_recent` — a post within the last 90 days | 5 |
 
-**Photo note.** Places caps the returned `photos` array, so an exact count is
-not available and a tiered photo score cannot be computed. Treat a short array
-as "thin" and a full array as "unknown, possibly fine" — do not attempt to
-distinguish 10 photos from 40. The human confirms the real count during the
-scan.
+**`primary_category_specific` note.** This signal is about the *content* of
+`primary_type`, not whether the field has a value — a returned-but-generic
+category is `absent`, not `present`. Concretely:
+- `present` — `primary_type` was returned and names the actual trade (e.g.
+  `chimney_sweep`, `roofing_contractor`).
+- `absent` — `primary_type` was returned but is a generic bucket (e.g.
+  `general_contractor`, `service`, `point_of_interest`) — **this is the
+  common case and is what earns the 35 points**, not the rare case.
+- `unknown` — `primary_type` was not returned at all.
+
+Score this from `primary_type` only. The generic `types` array is not
+sufficient evidence either way — it lists every category Places thinks
+might apply, not the one the business is filed under.
+
+**`photos_full` note.** Places caps the returned `photos` array, so an exact
+count is not available. Declare `absent` only when the array is
+conspicuously short (a handful of images or fewer); declare `unknown` — not
+`present` — when the array's length doesn't clearly indicate thin vs. full,
+or when the field wasn't returned at all. Do not attempt to distinguish 10
+photos from 40. The human confirms the real count during the scan.
 
 ### WEBSITE_SUBSCORE — compute uncapped, then apply the min(20) cap above
 
@@ -166,6 +198,14 @@ opener is a cold pitch, and cold pitches are what the score exists to avoid.
   "profile_subscore": 0,
   "website_subscore_raw": 0,
   "buyer_subscore": 0,
+  "signals": {
+    "primary_category_specific": "present|absent|unknown",
+    "photos_full": "present|absent|unknown",
+    "services_listed": "present|absent|unknown",
+    "business_description": "present|absent|unknown",
+    "hours_set": "present|absent|unknown",
+    "posts_recent": "present|absent|unknown"
+  },
   "site_class": "SITE_UNLINKED|SOCIAL_ONLY|NO_SITE|SITE_LINKED",
   "hook": "one sentence",
   "note": "one line for the human",
@@ -173,10 +213,15 @@ opener is a cold pitch, and cold pitches are what the score exists to avoid.
 }
 ```
 
+`signals` is required, all six keys, every run — declare each one even when
+the answer is `unknown`. `profile_subscore` must equal the sum of each
+signal's points where (and only where) that signal is `absent` — it is a
+lookup against `signals`, not a separately-judged number.
+
 `website_subscore_raw` is the uncapped total from the WEBSITE_SUBSCORE
 section — report it uncapped even when it exceeds 20. `score` is
 `profile_subscore + min(website_subscore_raw, 20) + buyer_subscore`; compute
 it with that formula exactly, don't estimate it.
 
-Never invent data. If a field was not returned by Places, treat it as unknown
-and say so in `flags` — not as absent.
+Never invent data. If a field was not returned by Places, its corresponding
+signal is `unknown` and it belongs in `flags` too — not `absent`.
