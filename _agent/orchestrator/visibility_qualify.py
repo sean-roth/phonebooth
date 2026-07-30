@@ -60,15 +60,34 @@ def _enforce_score_cap(parsed: dict) -> dict:
     return parsed
 
 
+def _field_or_unreturned(lead: dict, key: str) -> str:
+    """Render a field as its value, or explicitly 'not returned by Places'
+    when absent — never just omit the line. The model can only declare a
+    signals entry `unknown` (qualification-prompt.md) instead of guessing
+    `absent` if the payload tells it, per field, whether Places actually
+    returned that data."""
+    val = lead.get(key)
+    if val in (None, "", [], {}):
+        return "not returned by Places"
+    if isinstance(val, (list, tuple)):
+        return ", ".join(str(v) for v in val)
+    return str(val)
+
+
 def qualify(lead: dict) -> dict:
-    """Return the qualification JSON (verdict/score/subscores/site_class/hook/
-    note/flags) for one lead dict — expects name, phone, rating, reviews,
-    types, site_class, site_url, and psi ({'score', 'lcp'} or None/error)."""
+    """Return the qualification JSON (verdict/score/subscores/signals/
+    site_class/hook/note/flags) for one lead dict — expects name, phone,
+    rating, reviews, types, site_class, site_url, and psi ({'score', 'lcp'}
+    or None/error). Also reads primary_type, photos, services, description,
+    hours, recent_posts when the caller has them — primary_type in
+    particular carries the heaviest single profile-scoring weight (35 of
+    ~105 points) and must never be inferred from the generic `types` list."""
     psi = lead.get("psi") or {}
     user = (
         "Qualify this company. Return ONLY the JSON object.\n\n"
         f"name: {lead['name']}\n"
-        f"types: {', '.join(lead.get('types', []))}\n"
+        f"primary_type: {_field_or_unreturned(lead, 'primary_type')}\n"
+        f"types: {_field_or_unreturned(lead, 'types')}\n"
         f"phone: {lead['phone']}\n"
         f"rating: {lead.get('rating')}\n"
         f"review_count: {lead.get('reviews', 0)}\n"
@@ -76,6 +95,11 @@ def qualify(lead: dict) -> dict:
         f"website: {lead.get('site_url', '')}\n"
         f"psi_mobile_score: {psi.get('score', 'not tested')}\n"
         f"psi_lcp: {psi.get('lcp', 'not tested')}\n"
+        f"photos: {_field_or_unreturned(lead, 'photos')}\n"
+        f"services: {_field_or_unreturned(lead, 'services')}\n"
+        f"business_description: {_field_or_unreturned(lead, 'description')}\n"
+        f"hours: {_field_or_unreturned(lead, 'hours')}\n"
+        f"posts_last_90_days: {_field_or_unreturned(lead, 'recent_posts')}\n"
     )
     for _ in range(2):
         parsed = _qualify_once(user)
