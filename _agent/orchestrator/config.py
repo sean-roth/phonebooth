@@ -3,9 +3,11 @@ import os
 from pathlib import Path
 
 # Load .env if python-dotenv is installed (optional).
+# override=True makes .env the single source of truth, so a stray/stale
+# API key already in the shell environment can't silently shadow it.
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(override=True)
 except ImportError:
     pass
 
@@ -23,6 +25,7 @@ AGENT_DIR = Path(__file__).resolve().parent.parent          # _agent/
 DB_PATH = Path(os.getenv("SEEN_LEADS_DB", AGENT_DIR / "data" / "seen_leads.db"))
 SCHEMA_PATH = AGENT_DIR / "data" / "schema.sql"
 PROMPT_PATH = AGENT_DIR / "skills" / "leads" / "qualification-prompt.md"
+VISIBILITY_PROMPT_PATH = AGENT_DIR / "skills" / "visibility" / "qualification-prompt.md"
 OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", AGENT_DIR / "orchestrator" / "output"))
 
 # --- Run tuning ---

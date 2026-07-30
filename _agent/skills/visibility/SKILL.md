@@ -78,9 +78,16 @@ For every candidate with an empty website field:
    row entirely, however bad the profile looks. A dead business with a terrible
    listing is not a lead.
 5. **Classify the site.** Apply the unlinked-site rule above.
-6. **Qualify.** Send survivors to Sonnet with `qualification-prompt.md` as the
-   system prompt. Returns keep / reject / review, a provisional score, and a
-   one-line hook.
+6. **Qualify.** Run `../../orchestrator/visibility_qualify.py`'s `qualify()`
+   on survivors — it calls Sonnet with `qualification-prompt.md` as the
+   system prompt, thinking disabled (this is rubric application, not
+   reasoning — adaptive thinking was truncating ~20% of responses before the
+   JSON closed), retries once on a malformed response, and routes anything
+   still unparseable to `review` with a `parse_failure` flag rather than
+   dropping the lead. Returns keep / reject / review, a provisional score
+   (with the profile/website/buyer subscores and the website cap enforced
+   deterministically in code, not trusted to the model's own arithmetic),
+   and a one-line hook.
 7. **Enrich survivors only.** PageSpeed on keepers that have a reachable site.
    Do not run it on rejects; it is the expensive call.
 8. **Deliver.** Append to the tracker in `output-format.md` order, highest
