@@ -78,6 +78,27 @@ measured — only the date of the most recent one. Do not infer a rate.
 Rating above 4.9 across many reviews is mildly suspicious rather than good —
 note it, do not add points.
 
+### Site performance (LCP, survivors only)
+
+**Score on LCP only. The PSI mobile composite score is not a scored input —**
+record it (it's useful context for the human) but do not award or withhold
+points for it. Three runs on an identical site have been observed to return
+27-point swings in the composite (a lab-test artifact of blending several
+sub-metrics), which straddles any threshold you'd draw. LCP is one measured
+time, it is far more stable run-to-run, and its thresholds are Google's own
+Core Web Vitals cutoffs rather than an arbitrary one this project invented.
+
+| Signal | Points |
+|---|---|
+| LCP > 8s | 25 |
+| LCP 4–8s | 18 |
+| LCP 2.5–4s | 8 |
+| LCP < 2.5s | 0 |
+| LCP unknown | 0 (flag it — don't guess) |
+
+`NO_SITE`, an unreachable site, or a not-yet-tested lead scores zero here,
+never a penalty.
+
 ## Send to `review`, not `keep`
 
 - Duplicate review text, off-topic reviews, or reviews that read as generic
@@ -98,11 +119,15 @@ Good:
 - "Google has you filed under Contractor rather than Chimney Sweep."
 - "Your listing has a handful of photos; the shops ranking above you have
   dozens."
+- "Your website takes about seven seconds to load on a phone." (from a
+  measured LCP — say the rounded number, never "slow" alone)
 
 Bad:
 - "Your local SEO could be improved." (jargon, vague)
 - "You're losing thousands in leads." (invented, fear-based)
 - "Your site looks dated." (the agent has not seen it)
+- "Your Core Web Vitals need work." (jargon — PSI/LCP numbers are the hook,
+  not the metric name)
 
 If the data supports no specific hook, return `reject`. A call without an
 opener is a cold pitch, and cold pitches are what the score exists to avoid.
