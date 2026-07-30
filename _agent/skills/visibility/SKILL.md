@@ -44,11 +44,19 @@ Many have a site they simply never linked to their profile. This is the single
 highest-value finding available, and treating it as "no website" throws it away.
 
 For every candidate with an empty website field:
-1. Try domain patterns — `businessname.com`, `businessnametrade.com`,
-   hyphenated variants.
-2. If nothing resolves, a name-plus-city web search as fallback. Expect this to
-   fail often — the businesses with the worst web presence are exactly the ones
-   search will not surface. Domain guessing is the primary method, not search.
+1. Run `../../orchestrator/visibility_site.py`'s `classify_site()` — it
+   generates domain candidates (primary-segment concat, primary + trade noun,
+   hyphenated, possessive, full-name concat — trade nouns matter: "Bud
+   Chimney & Gutter" needs `budchimneysweep.com` tried, not just the literal
+   name) and checks existence by HTTP status only, accepting any response
+   (including 403/401/robots-blocked) as proof the domain exists. Never
+   fetches or parses body content.
+2. If `classify_site()` returns `NEEDS_PHONE_SEARCH` (no domain pattern
+   resolved), fall back to a `WebSearch` on the **phone number**, not the
+   business name — only the live agent session can run this, the script
+   can't. Phone numbers are near-unique and turn up on directory listings
+   even when the business's own name-based web presence is thin. Expect this
+   to fail often too. If it also comes up empty, classify `NO_SITE`.
 3. Classify:
 
 | Class | Meaning |
