@@ -29,8 +29,6 @@ appended to the live sheet, sorted so the strongest openers surface first.
   `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=<site>&strategy=mobile&key=<PAGESPEED_API_KEY>`.
   Read the key from `../../orchestrator/.env` (`PAGESPEED_API_KEY`). Free with a
   Google Cloud key. Run only on survivors, never on the raw source list.
-- **Firecrawl** (`firecrawl_scrape` only) — confirm a site exists when the
-  Places website field is empty. See the unlinked-site rule below.
 - **Playwright** — render at a phone viewport, capture a screenshot. Optional;
   only worth running on leads that already scored well.
 - **Google Drive** — read and append the tracker. Live sheet is the
