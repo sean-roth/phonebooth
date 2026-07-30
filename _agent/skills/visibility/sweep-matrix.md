@@ -85,3 +85,22 @@ franchises, or 100+ review shops.
 
 A slice is roughly one `maps_search_places` query per town in the corridor.
 Expect 3–8 keepers per slice; below three, the slice is thin.
+
+## Wide-service-area overlap
+
+Chimney sweep, snow removal, and roofing serve a wide radius — a single shop
+routinely covers multiple corridors in this matrix, not just the town it's
+headquartered in. Expect real overlap between adjacent corridors for these
+trades specifically: the same handful of established shops surface in both
+NW and N searches, for example.
+
+Two consequences, both expected — not a pipeline fault:
+- **Fewer net-new keepers per slice.** 3–4 real keepers is normal for these
+  trades, not the 6–8 a more localized trade produces.
+- **Adjacent corridors exhaust faster.** Once NW/chimney sweep is worked,
+  N/chimney sweep hands back some of the same businesses (dedup catches
+  them) alongside a smaller net-new set.
+
+Localized trades — gutters, garage doors, interior painting, duct cleaning —
+don't show this pattern; their service areas track the corridor towns much
+more tightly.
