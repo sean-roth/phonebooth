@@ -25,9 +25,10 @@ appended to the live sheet, sorted so the strongest openers surface first.
 - **Google Maps (Places)**: `maps_search_places`, `maps_place_details` — source
   candidates, then pull phone, website field, rating, review count, photos,
   categories, hours. Details is not optional.
-- **PageSpeed Insights API** — `pagespeedonline/v5/runPagespeed`, mobile
-  strategy. Free with a Google Cloud key. Run only on survivors, never on the
-  raw source list.
+- **PageSpeed Insights API** — no MCP server; call it directly with `WebFetch`:
+  `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=<site>&strategy=mobile&key=<PAGESPEED_API_KEY>`.
+  Read the key from `../../orchestrator/.env` (`PAGESPEED_API_KEY`). Free with a
+  Google Cloud key. Run only on survivors, never on the raw source list.
 - **Firecrawl** (`firecrawl_scrape` only) — confirm a site exists when the
   Places website field is empty. See the unlinked-site rule below.
 - **Playwright** — render at a phone viewport, capture a screenshot. Optional;
