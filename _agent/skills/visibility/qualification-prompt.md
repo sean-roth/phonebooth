@@ -52,46 +52,48 @@ this makes the cap auditable rather than a number you have to trust.
 ### PROFILE_SUBSCORE — uncapped, the primary driver
 
 **Every signal below must first be declared in the `signals` object** (see
-Output) as exactly one of `present`, `absent`, or `unknown` — before you
-compute any points. Then score strictly from that declaration:
+Output) — before you compute any points. Score strictly from that
+declaration; never re-derive the number from a separate judgment call at
+scoring time. (An earlier version of this prompt scored profile
+completeness from prose instructions alone — "if a field was not returned,
+treat it as unknown, not absent" — and two visibly identical leads, both
+missing the same fields, scored 35 and 80 on the same run. This structure —
+declare first, then look up — exists to make that impossible.)
 
-- `absent` → award the signal's points.
-- `present` or `unknown` → award zero. **No exceptions.** A signal you are
-  not confident calling `absent` is `unknown`, not `absent` — guessing in
-  the scoring direction is exactly the failure this structure exists to
-  prevent. (An earlier version of this prompt scored profile completeness
-  from prose instructions alone — "if a field was not returned, treat it as
-  unknown, not absent" — and two visibly identical leads, both missing the
-  same fields, scored 35 and 80 on the same run. The fix is this object:
-  scoring is a lookup against a declaration you already committed to, not a
-  judgment call made at scoring time.)
+Five of the six signals are **completeness checks** (does an optional
+profile element exist) and share one vocabulary: `present` (it exists),
+`absent` (confirmed missing), `unknown` (Places didn't return enough to
+tell). Score points only for `absent` — `present` and `unknown` both score
+zero, no exceptions.
 
-If the payload states a field was **not returned by Places**, that signal is
-`unknown` — never infer `absent` from an unreturned field, no matter how the
-business's `types` or name reads.
+`primary_category_specific` is a different *kind* of check and uses its own
+vocabulary instead of present/absent. `primary_type` is a field that
+(almost) always carries *some* value, so "does data exist" is never the
+real question — the question is what the value says. Forcing that into
+present/absent is exactly what caused a `primary_type: "general_contractor"`
+case to be misdeclared `present` (read as "the field has a value") when it
+should have scored the full 35 points. Its vocabulary: `specific` (names
+the actual trade), `generic` (a bucket like "Contractor" or "Service" —
+**this is the common case and what earns the points**), `unknown` (the
+field genuinely wasn't returned).
 
-| Signal | Points when `absent` |
-|---|---|
-| `primary_category_specific` — primary type is a specific trade, not a generic bucket like "Contractor" or "Service" | 35 |
-| `photos_full` — profile has a substantial photo array | 25 |
-| `services_listed` — services are listed on the profile | 15 |
-| `business_description` — profile has a business description | 15 |
-| `hours_set` — business hours are set | 10 |
-| `posts_recent` — a post within the last 90 days | 5 |
+If the payload states a field was **not returned by Places**, its signal is
+`unknown` regardless of vocabulary — never infer a scored value from an
+unreturned field, no matter how the business's `types` or name reads.
 
-**`primary_category_specific` note.** This signal is about the *content* of
-`primary_type`, not whether the field has a value — a returned-but-generic
-category is `absent`, not `present`. Concretely:
-- `present` — `primary_type` was returned and names the actual trade (e.g.
-  `chimney_sweep`, `roofing_contractor`).
-- `absent` — `primary_type` was returned but is a generic bucket (e.g.
-  `general_contractor`, `service`, `point_of_interest`) — **this is the
-  common case and is what earns the 35 points**, not the rare case.
-- `unknown` — `primary_type` was not returned at all.
+| Signal | Vocabulary | Points |
+|---|---|---|
+| `primary_category_specific` | `specific` / `generic` / `unknown` | 35 when `generic` |
+| `photos_full` | `present` / `absent` / `unknown` | 25 when `absent` |
+| `services_listed` | `present` / `absent` / `unknown` | 15 when `absent` |
+| `business_description` | `present` / `absent` / `unknown` | 15 when `absent` |
+| `hours_set` | `present` / `absent` / `unknown` | 10 when `absent` |
+| `posts_recent` | `present` / `absent` / `unknown` | 5 when `absent` |
 
-Score this from `primary_type` only. The generic `types` array is not
-sufficient evidence either way — it lists every category Places thinks
-might apply, not the one the business is filed under.
+**`primary_category_specific` note.** Score this from `primary_type` only.
+The generic `types` array is not sufficient evidence either way — it lists
+every category Places thinks might apply, not the one the business is filed
+under.
 
 **`photos_full` note.** Places caps the returned `photos` array, so an exact
 count is not available. Declare `absent` only when the array is
@@ -199,7 +201,7 @@ opener is a cold pitch, and cold pitches are what the score exists to avoid.
   "website_subscore_raw": 0,
   "buyer_subscore": 0,
   "signals": {
-    "primary_category_specific": "present|absent|unknown",
+    "primary_category_specific": "specific|generic|unknown",
     "photos_full": "present|absent|unknown",
     "services_listed": "present|absent|unknown",
     "business_description": "present|absent|unknown",
@@ -215,8 +217,9 @@ opener is a cold pitch, and cold pitches are what the score exists to avoid.
 
 `signals` is required, all six keys, every run — declare each one even when
 the answer is `unknown`. `profile_subscore` must equal the sum of each
-signal's points where (and only where) that signal is `absent` — it is a
-lookup against `signals`, not a separately-judged number.
+signal's points where its own trigger value applies (`generic` for
+`primary_category_specific`, `absent` for the other five) — it is a lookup
+against `signals`, not a separately-judged number.
 
 `website_subscore_raw` is the uncapped total from the WEBSITE_SUBSCORE
 section — report it uncapped even when it exceeds 20. `score` is
@@ -224,4 +227,6 @@ section — report it uncapped even when it exceeds 20. `score` is
 it with that formula exactly, don't estimate it.
 
 Never invent data. If a field was not returned by Places, its corresponding
-signal is `unknown` and it belongs in `flags` too — not `absent`.
+signal is `unknown` — for `primary_category_specific` that means `unknown`,
+never `generic`; for the other five it means `unknown`, never `absent`. Say
+so in `flags` too.
