@@ -90,6 +90,16 @@ unreturned field, no matter how the business's `types` or name reads.
 | `hours_set` | `present` / `absent` / `unknown` | 10 when `absent` |
 | `posts_recent` | `present` / `absent` / `unknown` | 5 when `absent` |
 
+**`services_listed` and `posts_recent` are permanently `unknown`.** The
+public Places API does not expose a business's listed services or its
+Google Business Profile posts at all — there is no field to request, ever,
+regardless of how the payload is built or what a future integration adds.
+Declare `unknown` for these two on every lead; this is not a data gap to
+chase. **PROFILE_SUBSCORE's realistic ceiling is therefore 85, not the
+nominal 105** (105 minus these two signals' 15 + 5 points) — calibrate
+expectations, including the `review` threshold below, against 85 as the
+practical maximum.
+
 **`primary_category_specific` note.** Score this from `primary_type` only.
 The generic `types` array is not sufficient evidence either way — it lists
 every category Places thinks might apply, not the one the business is filed
