@@ -22,6 +22,11 @@ TRADE_NOUNS = {
 
 
 def _tokens(segment):
+    # Strip apostrophes rather than treating them as separators — "Ivan's"
+    # must tokenize to "ivans", not split into "ivan" + a stray "s" token
+    # (which corrupts the hyphenated/possessive variants downstream even
+    # though straight concatenation happens to hide the damage).
+    segment = segment.replace("'", "").replace("’", "")
     return [t for t in "".join(ch if ch.isalnum() else " " for ch in segment.lower()).split()
             if t not in STOPWORDS]
 
