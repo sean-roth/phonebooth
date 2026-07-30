@@ -16,8 +16,12 @@ Return: `keep`, `reject`, or `review`, plus a score 0–100 and a one-line hook.
 
 ## Hard gates — reject immediately
 
-- **Most recent review older than 12 months.** Likely not trading. This gate
-  overrides everything; a terrible profile on a dead business is not a lead.
+- **`businessStatus` is anything other than `OPERATIONAL`.** Places reports
+  `CLOSED_TEMPORARILY` and `CLOSED_PERMANENTLY` directly. Cheapest and most
+  reliable viability check available — apply it before anything else.
+- **Most recent review older than 12 months.** Secondary viability gate for
+  businesses still marked operational but visibly dormant. A terrible profile
+  on a dead business is not a lead.
 - **Franchise or national chain.** They have corporate marketing.
 - **Over 100 reviews.** Almost certainly already has an agency.
 - **Under 15 reviews.** Too new or too small to have $400.
@@ -47,12 +51,17 @@ years without a website has demonstrated they do not believe they need one.
 | Signal | Points |
 |---|---|
 | Primary category generic ("Contractor", "Service") rather than the trade | 25 |
-| Under 10 photos | 20 |
-| 10–19 photos | 10 |
+| Photos array not full — see note below | 20 |
 | No business description | 10 |
 | No services listed | 10 |
 | No hours set | 10 |
 | No posts in 90 days | 5 |
+
+**Photo note.** Places caps the returned `photos` array, so an exact count is
+not available and a tiered photo score cannot be computed. Treat a short array
+as "thin" and a full array as "unknown, possibly fine" — do not attempt to
+distinguish 10 photos from 40. The human confirms the real count during the
+scan.
 
 ### Buyer signals
 | Signal | Points |
@@ -60,17 +69,21 @@ years without a website has demonstrated they do not believe they need one.
 | 25–60 reviews | 15 |
 | 15–24 or 61–80 reviews | 8 |
 | Rating 4.3–4.9 | 5 |
-| At least one review in the last 90 days | 10 |
+| Most recent review inside 90 days | 10 |
 | Owner's first name appears in review text | 5 |
+
+Places returns only a handful of reviews, so review *velocity* cannot be
+measured — only the date of the most recent one. Do not infer a rate.
 
 Rating above 4.9 across many reviews is mildly suspicious rather than good —
 note it, do not add points.
 
 ## Send to `review`, not `keep`
 
-- Duplicate review text, off-topic reviews, or a sharp volume spike. Probably a
-  purchased package. Still a buyer — they spend on marketing — but a human
-  should decide, and the profile is exposed if Google removes them.
+- Duplicate review text, off-topic reviews, or reviews that read as generic
+  templates. Probably a purchased package. Still a buyer — they spend on
+  marketing — but a human should decide, and the profile is exposed if Google
+  removes them.
 - Trade is ambiguous from the listing.
 - Business name suggests commercial or industrial rather than residential work.
 - Anything scoring above 70 with fewer than 20 reviews.
@@ -83,7 +96,8 @@ from the data.
 Good:
 - "Your website isn't linked on your Google listing."
 - "Google has you filed under Contractor rather than Chimney Sweep."
-- "Your listing has two photos; the three shops above you average forty."
+- "Your listing has a handful of photos; the shops ranking above you have
+  dozens."
 
 Bad:
 - "Your local SEO could be improved." (jargon, vague)
