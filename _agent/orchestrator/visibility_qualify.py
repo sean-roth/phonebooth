@@ -74,6 +74,23 @@ def _field_or_unreturned(lead: dict, key: str) -> str:
     return str(val)
 
 
+def _description_status(lead: dict) -> str:
+    """Three states, not two. A caller that fetched editorialSummary and got
+    nothing back must set lead['description'] = "" explicitly — that is
+    itself scoreable profile-completeness information ('Places confirms no
+    description exists', the business_description `absent` signal) and is
+    not the same fact as a caller that never fetched the field at all (key
+    omitted or None, the `unknown` signal). Collapsing these two into one
+    'not returned by Places' string is what caused business_description to
+    be misjudged inconsistently in testing — the model had no way to tell
+    a confirmed-empty field from a never-asked one."""
+    if "description" not in lead or lead["description"] is None:
+        return "not requested from Places"
+    if lead["description"] == "":
+        return "requested from Places — confirmed no description present"
+    return str(lead["description"])
+
+
 def qualify(lead: dict) -> dict:
     """Return the qualification JSON (verdict/score/subscores/signals/
     site_class/hook/note/flags) for one lead dict — expects name, phone,
@@ -81,7 +98,13 @@ def qualify(lead: dict) -> dict:
     or None/error). Also reads primary_type, photos, services, description,
     hours, recent_posts when the caller has them — primary_type in
     particular carries the heaviest single profile-scoring weight (35 of
-    ~105 points) and must never be inferred from the generic `types` list."""
+    ~105 points) and must never be inferred from the generic `types` list.
+
+    `description` has a three-state contract, not the omit-or-value pattern
+    the other fields use: omit the key (or pass None) when it was never
+    fetched; pass "" explicitly when editorialSummary was fetched and came
+    back empty (Places confirms no description — this is itself a scoreable
+    fact); pass the real text otherwise. See _description_status()."""
     psi = lead.get("psi") or {}
     user = (
         "Qualify this company. Return ONLY the JSON object.\n\n"
@@ -97,7 +120,7 @@ def qualify(lead: dict) -> dict:
         f"psi_lcp: {psi.get('lcp', 'not tested')}\n"
         f"photos: {_field_or_unreturned(lead, 'photos')}\n"
         f"services: {_field_or_unreturned(lead, 'services')}\n"
-        f"business_description: {_field_or_unreturned(lead, 'description')}\n"
+        f"business_description: {_description_status(lead)}\n"
         f"hours: {_field_or_unreturned(lead, 'hours')}\n"
         f"posts_last_90_days: {_field_or_unreturned(lead, 'recent_posts')}\n"
     )

@@ -102,6 +102,15 @@ conspicuously short (a handful of images or fewer); declare `unknown` — not
 or when the field wasn't returned at all. Do not attempt to distinguish 10
 photos from 40. The human confirms the real count during the scan.
 
+**`business_description` note.** This field's payload line carries three
+distinct states, not two — read it literally, don't collapse it back down:
+- Real description text → `present`.
+- `requested from Places — confirmed no description present` → `absent`.
+  Places was asked and confirmed there is nothing there; this is real
+  profile-completeness information, not a data gap.
+- `not requested from Places` → `unknown`. Nobody asked, so nothing can be
+  inferred either way.
+
 ### WEBSITE_SUBSCORE — compute uncapped, then apply the min(20) cap above
 
 Start at zero. Compute the full uncapped total here — the cap is applied once,
