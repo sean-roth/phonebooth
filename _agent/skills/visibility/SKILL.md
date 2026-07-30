@@ -50,11 +50,17 @@ For every candidate with an empty website field:
    (including 403/401/robots-blocked) as proof the domain exists. Never
    fetches or parses body content.
 2. If `classify_site()` returns `NEEDS_PHONE_SEARCH` (no domain pattern
-   resolved), fall back to a `WebSearch` on the **phone number**, not the
-   business name — only the live agent session can run this, the script
-   can't. Phone numbers are near-unique and turn up on directory listings
-   even when the business's own name-based web presence is thin. Expect this
-   to fail often too. If it also comes up empty, classify `NO_SITE`.
+   resolved), fall back to a `WebSearch` — only the live agent session can
+   run this, the script can't. **Query on business name + phone number
+   together, not the phone number alone.** Tested against a known-correct
+   case: a bare phone-number query (`"(847) 457-0679" chimney`, and the
+   number alone with no other terms) missed the business's real site
+   entirely — general web search doesn't index raw phone numbers well as a
+   standalone term. `"<business name>" "<phone fragment>"` found the exact
+   right site as the third result on the same case. If a Facebook/Instagram
+   page turns up but no owned site does, that's `SOCIAL_ONLY`, not `NO_SITE`
+   — see below. Expect this to fail often too. If nothing beyond directory
+   listings and aggregators turns up, classify `NO_SITE`.
 3. Classify:
 
 | Class | Meaning |
