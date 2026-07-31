@@ -13,11 +13,12 @@ currently imports a _gspread_client() that doesn't exist in the committed
 sink.py). That's a pre-existing gap in the leads/ pipeline, out of scope
 here; this module just uses the credential files that are actually on disk
 and already authorized."""
+import json
 import os
 import re
 from datetime import date
 
-from config import SHEETS_SPREADSHEET_ID
+from config import SHEETS_SPREADSHEET_ID, OUTPUT_DIR
 
 WORKSHEET = "Web Development - Master"
 REVIEW_WORKSHEET = "Review"
@@ -110,6 +111,27 @@ def _gspread_client():
         authorized_user_filename=os.path.join(cfg, "authorized_user.json"),
         scopes=["https://www.googleapis.com/auth/spreadsheets"],
     )
+
+
+def persist_qualified(leads: list) -> str:
+    """Append every lead's full record (including its 'qualification' dict)
+    to OUTPUT_DIR/visibility-qualify-YYYY-MM-DD.jsonl, one JSON object per
+    line. Always appends, never truncates -- call this once per run with
+    the COMPLETE post-qualify() list (every verdict: keep, review, AND
+    reject), before any sheet delivery.
+
+    This is the only durable, complete record of a run's qualification
+    detail once same-day scratch files are cleaned up. The 2026-07-30
+    snow-removal slice's review-verdict leads had to be reconstructed from
+    chat/terminal history because nothing else survived their scratch
+    JSON being deleted after delivery -- this function exists so that
+    never has to happen again. Never delete the files this writes."""
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    path = OUTPUT_DIR / f"visibility-qualify-{date.today().isoformat()}.jsonl"
+    with open(path, "a", encoding="utf-8") as f:
+        for lead in leads:
+            f.write(json.dumps(lead, ensure_ascii=False, default=str) + "\n")
+    return str(path)
 
 
 def _write_rows(ws, rows: list) -> int:

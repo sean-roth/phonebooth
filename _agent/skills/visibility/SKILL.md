@@ -94,8 +94,18 @@ For every candidate with an empty website field:
    and a one-line hook.
 7. **Enrich survivors only.** PageSpeed on keepers that have a reachable site.
    Do not run it on rejects; it is the expensive call.
-8. **Deliver.** Append to the tracker in `output-format.md` order, highest
-   score first. Ambiguous rows go to the review tab, never the callable list.
+8. **Persist, then deliver.** Before appending anything to a sheet, call
+   `visibility_sink.py`'s `persist_qualified()` with the complete
+   post-qualify list for the run — every verdict, not just keepers.
+   Appends to `output/visibility-qualify-YYYY-MM-DD.jsonl`, one JSON
+   object per lead per line; never delete these files. This is the only
+   durable, complete record of what qualify() actually returned once
+   same-day scratch files are cleaned up — skipping it is what turned
+   the 2026-07-30 review-verdict leads into a chat-history reconstruction
+   instead of a straight copy. Then append keepers to the tracker via
+   `append_leads()` in `output-format.md` order, highest score first, and
+   ambiguous rows to the Review tab via `append_review_leads()` — never
+   the callable list.
 
 ## Guardrails
 - **NEVER call, email, or contact anyone.** This skill sources and filters.
