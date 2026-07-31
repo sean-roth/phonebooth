@@ -8,9 +8,9 @@ Separate tab from the SOPs tracker. Never write to the SOPs tab.
 ```
 Source | Trade | Company | Phone | Website | Reviews | Rating |
 SiteStatus | Platform | PSI | LCP | MobileOK | TapPhone | HTTPS | GBP |
-Observation | Score | Hook | Contact | Status | Last Touch | Next Touch |
-Attempts | Audit Sent | 60-Day Re-dial | Notes | Tier | Price | Deposit |
-Balance | Retainer | DocLink | PSILink
+Observation | Score | ProfileScore | WebsiteScore | BuyerScore | Hook | Contact |
+Status | Last Touch | Next Touch | Attempts | Audit Sent | 60-Day Re-dial | Notes |
+Tier | Price | Deposit | Balance | Retainer | DocLink | PSILink
 ```
 
 ## Who writes what
@@ -30,8 +30,11 @@ empty, because Sean will trust it.
 | Rating | Average |
 | GBP | `Complete` / `Thin` / `Unclaimed` / `Missing` |
 | PSI | PageSpeed mobile score, survivors only |
-| LCP | Seconds, survivors only |
+| LCP | Seconds, bare number, survivors only |
 | Score | Provisional, from `qualification-prompt.md` |
+| ProfileScore | `profile_subscore` from qualify(), uncapped |
+| WebsiteScore | `min(website_subscore_raw, 20)` — capped, so ProfileScore + WebsiteScore + BuyerScore == Score reads directly off the sheet |
+| BuyerScore | `buyer_subscore` from qualify() |
 | Hook | One sentence, data-supported only |
 | Status | `Not called` |
 | Notes | The model's one-liner, plus the site class |

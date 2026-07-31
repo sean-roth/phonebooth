@@ -86,7 +86,13 @@ def _row(lead: dict, corridor: str, trade: str) -> list:
         "GBP": _gbp_status(q.get("signals", {})),
         "Score": q.get("score", ""),
         "ProfileScore": q.get("profile_subscore", ""),
-        "WebsiteScore": q.get("website_subscore_raw", ""),
+        # Capped, not raw: WebsiteScore must satisfy
+        # ProfileScore + WebsiteScore + BuyerScore == Score by direct sheet
+        # arithmetic, with no mental min(x, 20) required to audit it.
+        "WebsiteScore": (
+            min(q["website_subscore_raw"], 20)
+            if isinstance(q.get("website_subscore_raw"), (int, float)) else ""
+        ),
         "BuyerScore": q.get("buyer_subscore", ""),
         "Hook": q.get("hook", ""),
         "Status": "Not called",
@@ -109,10 +115,35 @@ def append_leads(leads: list, corridor: str, trade: str) -> int:
     """Append leads (each a dict with a populated 'qualification' key) to
     the Web Development - Master tab, highest score first. Returns the
     number of rows written."""
+    import gspread
     ordered = sorted(leads, key=lambda l: l["qualification"].get("score", 0), reverse=True)
     rows = [_row(lead, corridor, trade) for lead in ordered]
     gc = _gspread_client()
     sh = gc.open_by_key(SHEETS_SPREADSHEET_ID)
     ws = sh.worksheet(WORKSHEET)
-    ws.append_rows(rows, value_input_option="USER_ENTERED")
+
+    # Do NOT use append_rows()/values.append here, even with table_range.
+    # PSILink (column AJ) holds a formula in every real row, well to the
+    # right of Notes (column AC) with the blank Tier/Price/Deposit/...
+    # columns in between -- a second, disjoint block at the same row-depth
+    # as the real A:AC data. Google's table-detection follows that block
+    # regardless of table_range (confirmed live: table_range="A1:AC1" still
+    # returned tableRange 'A1:AJ5' and wrote to row 6, because a row with
+    # nothing but an AJ formula still counts as part of "the table" once
+    # any column is considered). table_range constrains where values land,
+    # not how the next row is found -- it does not fix this.
+    #
+    # Compute the target row directly instead: the last row where Company
+    # (a required field on every real lead) actually has a value, plus one.
+    # This is immune to whatever is sitting in columns further right.
+    company_col = ws.col_values(3)
+    last_real_row = 1
+    for i, v in enumerate(company_col, start=1):
+        if v.strip():
+            last_real_row = i
+    next_row = last_real_row + 1
+
+    last_col_a1 = gspread.utils.rowcol_to_a1(1, len(COLUMNS)).rstrip("0123456789")
+    target_range = f"A{next_row}:{last_col_a1}{next_row + len(rows) - 1}"
+    ws.update(target_range, rows, value_input_option="USER_ENTERED")
     return len(rows)
