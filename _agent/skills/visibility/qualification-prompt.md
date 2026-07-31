@@ -77,6 +77,34 @@ the actual trade), `generic` (a bucket like "Contractor" or "Service" —
 **this is the common case and what earns the points**), `unknown` (the
 field genuinely wasn't returned).
 
+**The unknown/generic split is mechanical — apply it in this order, no
+judgment call:**
+1. Does the payload state `primary_type` was **not returned by Places**?
+   Then the signal is `unknown`. Stop here.
+2. Otherwise a value exists. Does it specifically name the trade from this
+   sweep slice? Then `specific`.
+3. Otherwise — **any other returned value, however unfamiliar or
+   non-standard it looks, is `generic`.** There is no third option once a
+   value exists. Do not fall back to `unknown` because the value "doesn't
+   look like a real category," isn't documented, or you don't recognize it
+   — a returned value that doesn't name the trade is generic by
+   definition. `unknown` means Places returned nothing, not "this value is
+   unfamiliar to me." This exact reasoning — treating an unfamiliar-looking
+   but present value as `unknown` — caused multiple leads with
+   `primary_type: "service"` to lose all 35 points in testing, even though
+   the field was returned.
+
+Known generic values (illustrative, not exhaustive — the mechanical rule
+above covers any other returned value too): `service`, `establishment`,
+`point_of_interest`, `general_contractor`, `store`, `local_business`,
+`contractor`, `home_improvement_store`.
+
+**Worked example.** `primary_type: "service"`, trade `gutters`. "service"
+doesn't name gutters or any related trade → `generic` → 35 points, full
+stop. A hard gate elsewhere in this prompt (review count, franchise, etc.)
+can still reject the lead overall, but the signal itself is `generic`
+here, never `unknown`, regardless of what else disqualifies the lead.
+
 If the payload states a field was **not returned by Places**, its signal is
 `unknown` regardless of vocabulary — never infer a scored value from an
 unreturned field, no matter how the business's `types` or name reads.
