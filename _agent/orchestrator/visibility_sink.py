@@ -14,24 +14,27 @@ sink.py). That's a pre-existing gap in the leads/ pipeline, out of scope
 here; this module just uses the credential files that are actually on disk
 and already authorized."""
 import os
+import re
 from datetime import date
 
 from config import SHEETS_SPREADSHEET_ID
 
 WORKSHEET = "Web Development - Master"
 
-# Exactly the 26 columns through "Notes" in the real sheet's column order
-# (verified against the live header row). Everything from "Tier" onward is
-# intentionally never included in a row we send — append_rows() then leaves
-# those cells (human-owned columns, and the PSILink formula) untouched
-# rather than risking a value landing in the wrong cell over an ambiguity
-# further out in the sheet (Deposit/Balance/Retainer render as what appears
-# to be a single merged column live, though output-format.md documents three).
+# Exactly the 29 columns through "Notes" in the real sheet's column order
+# (verified against the live header row after the 2026-07-30 cleanup added
+# ProfileScore/WebsiteScore/BuyerScore after Score). Everything from "Tier"
+# onward is intentionally never included in a row we send — append_rows()
+# then leaves those cells (human-owned columns, and the PSILink formula)
+# untouched rather than risking a value landing in the wrong cell over an
+# ambiguity further out in the sheet (Deposit/Balance/Retainer are three
+# separate columns as of the same cleanup).
 COLUMNS = [
     "Source", "Trade", "Company", "Phone", "Website", "Reviews", "Rating",
     "SiteStatus", "Platform", "PSI", "LCP", "MobileOK", "TapPhone", "HTTPS",
-    "GBP", "Observation", "Score", "Hook", "Contact", "Status", "Last Touch",
-    "Next Touch", "Attempts", "Audit Sent", "60-Day Re-dial", "Notes",
+    "GBP", "Observation", "Score", "ProfileScore", "WebsiteScore", "BuyerScore",
+    "Hook", "Contact", "Status", "Last Touch", "Next Touch", "Attempts",
+    "Audit Sent", "60-Day Re-dial", "Notes",
 ]
 
 # Positions in COLUMNS the human owns — left as "" even though they sit
@@ -57,6 +60,17 @@ def _gbp_status(signals: dict) -> str:
     return "Thin" if any(v in concerning for v in known) else "Complete"
 
 
+def _bare_lcp(value) -> str:
+    """PSI/Lighthouse's displayValue for LCP is a string like "8.4 s" (with
+    a non-breaking space). The sheet wants a bare number so it stays
+    numeric/sortable — strip any trailing unit text rather than trusting
+    the caller to have already extracted the number."""
+    if value in (None, ""):
+        return ""
+    m = re.match(r"^\s*([\d.]+)", str(value))
+    return m.group(1) if m else str(value)
+
+
 def _row(lead: dict, corridor: str, trade: str) -> list:
     q = lead["qualification"]
     values = {
@@ -68,9 +82,12 @@ def _row(lead: dict, corridor: str, trade: str) -> list:
         "Reviews": lead.get("reviews", ""),
         "Rating": lead.get("rating", ""),
         "PSI": (lead.get("psi") or {}).get("score", ""),
-        "LCP": (lead.get("psi") or {}).get("lcp", ""),
+        "LCP": _bare_lcp((lead.get("psi") or {}).get("lcp", "")),
         "GBP": _gbp_status(q.get("signals", {})),
         "Score": q.get("score", ""),
+        "ProfileScore": q.get("profile_subscore", ""),
+        "WebsiteScore": q.get("website_subscore_raw", ""),
+        "BuyerScore": q.get("buyer_subscore", ""),
         "Hook": q.get("hook", ""),
         "Status": "Not called",
         "Notes": f"[{lead.get('site_class', '')}] {q.get('note', '')}".strip(),
