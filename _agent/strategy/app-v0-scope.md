@@ -1,3 +1,34 @@
+> ## ARCHIVED 2026-08-13 — reference only. This document no longer governs.
+>
+> **Where v0 scope lives now:** `sean-roth/snr-app` — `docs/DECISION-2026-08-13-adrs.md`
+> (Sean's rulings) and `docs/TECH-PROPOSAL.md` ADR-8 (build order). Those arrive on
+> `main` via snr-app PRs #7 and #2; until they merge, read them on their branches.
+>
+> **Why archived rather than corrected.** Sean, 2026-08-13: *as we build, the plans must
+> meet reality, and that rarely looks the same later.* This document is not wrong for
+> having aged. It was wrong for still being cited as governing while it aged — both
+> `snr-app/KICKOFF.md` and `snr-app/ARCHITECTURE.md` routed v0 scope through it. Keeping
+> the thinking and removing the authority is the honest split.
+>
+> **What had gone stale.** The "Behind the curtain (do not build)" list below was written
+> on 2026-07-20. On 2026-07-22 Sean ruled that SNR is "an app with a lot of service,"
+> resolving scope per the **dual rule**: build client-facing surfaces **plus whatever makes
+> the service fast**; every other layer waits until it is needed. Read plainly against that
+> ruling, the list below forbids the entire v0 Runner — including the gate console, which
+> is the single highest-evidence requirement in the record (four publish-before-review
+> failures, escalating). That contradiction is why this file needed a ruling rather than
+> an edit.
+>
+> **What carried forward, still true.** The Wizard-of-Oz principle. The interview as the
+> one real build. Ownership as a feature — they can always leave whole. One shared,
+> one-place-steerable chrome. Metering API spend per delivered module from day one so
+> pricing is set on data. The exit test: run LOTO through the container as client zero.
+>
+> Left otherwise unedited below, deliberately. An archive that gets tidied stops being
+> evidence of what was thought at the time.
+
+---
+
 # App v0 scope — the container, not the product
 
 STATUS: DRAFT (2026-07-20). This gates the founding-customer offer. Live sales
